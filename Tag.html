@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CSV 表格</title>
+  <style>
+    body { 
+      font-family: "Microsoft JhengHei", sans-serif; 
+      padding: 10px; 
+      background-color: #f9f9f9;
+    }
+    table { 
+      width: 100%; 
+      border-collapse: collapse; 
+    }
+    td { 
+      padding: 10px; 
+      text-align: left; 
+      background-color: #fff;
+    }
+    tr:not(:last-child) td {
+      border-bottom: 1px solid #eee; /* 淡淡分隔線，僅作行分隔 */
+    }
+  </style>
+</head>
+<body>
+
+<table id="csvTable">
+  <tbody>
+    <!-- CSV 資料會填入這裡 -->
+  </tbody>
+</table>
+
+<script>
+const csvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQj2YzRRSrSV4RK4ESvsTSkizgRNPYjFzZDxMTxn-PGzuhZXxc1y4fIi43geRHgBJPggusWccWucOd8/pub?gid=1848526499&single=true&output=csv';
+
+fetch(csvUrl)
+  .then(response => response.text())
+  .then(data => {
+    const rows = data.split('\n').slice(1); // 去掉 CSV 標題
+    const tbody = document.querySelector('#csvTable tbody');
+    let lastCategory = '';
+    rows.forEach(row => {
+      if(!row.trim()) return; // 忽略空行
+      const cols = row.split(',');
+      const category = cols[0];
+      const displayCategory = category !== lastCategory ? category : '';
+      lastCategory = category;
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td>${displayCategory}</td>
+        <td>${cols[1]}</td>
+        <td>${cols[2]}</td>
+        <td>${cols[3]}</td>
+      `;
+      tbody.appendChild(tr);
+    });
+  })
+  .catch(err => console.error('讀取 CSV 錯誤:', err));
+</script>
+
+</body>
+</html>
