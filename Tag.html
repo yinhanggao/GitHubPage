@@ -1,35 +1,39 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>標籤表格</title>
-  <style>
-    body { 
-      font-family: "Microsoft JhengHei", sans-serif; 
-      padding: 10px; 
-      background-color: #f9f9f9;
-    }
-    table { 
-      width: 100%; 
-      border-collapse: collapse; 
-    }
-    td { 
-      padding: 10px; 
-      text-align: left; 
-      background-color: #fff;
-    }
-    tr:not(:last-child) td {
-      border-bottom: 1px solid #eee; /* 淡淡分隔線 */
-    }
-    a {
-      color: #1DA1F2;
-      text-decoration: none;
-    }
-    a:hover {
-      text-decoration: underline;
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tag 網頁</title>
+<style>
+body { 
+  font-family: "Microsoft JhengHei", sans-serif; 
+  padding: 10px; 
+  background-color: #f9f9f9;
+}
+table { 
+  width: 100%; 
+  border-collapse: collapse; 
+}
+td { 
+  padding: 10px; 
+  text-align: left; 
+  background-color: #fff;
+}
+tr:not(:last-child) td {
+  border-bottom: 1px solid #eee;
+}
+a {
+  color: #1DA1F2;
+  text-decoration: none;
+  margin-left: 5px;
+}
+a.ig {
+  color: #C13584; /* IG 粉色 */
+}
+a:hover {
+  text-decoration: underline;
+}
+</style>
 </head>
 <body>
 
@@ -49,16 +53,16 @@ fetch(csvUrl)
     const tbody = document.querySelector('#csvTable tbody');
     let lastCategory = '';
     rows.forEach(row => {
-      if(!row.trim()) return; // 忽略空行
+      if(!row.trim()) return;
       const cols = row.split(',');
       const category = cols[0];
       const displayCategory = category !== lastCategory ? category : '';
       lastCategory = category;
 
-      // 建立 Twitter 搜尋連結，URL encode 標籤文字
-      const jpLink = `<a href="https://twitter.com/search?q=%23${encodeURIComponent(cols[1])}" target="_blank">${cols[1]}</a>`;
-      const cnLink = `<a href="https://twitter.com/search?q=%23${encodeURIComponent(cols[2])}" target="_blank">${cols[2]}</a>`;
-      const enLink = `<a href="https://twitter.com/search?q=%23${encodeURIComponent(cols[3])}" target="_blank">${cols[3]}</a>`;
+      // 建立 Twitter 和 IG 搜尋連結
+      const jpLink = `${cols[1]} <a href="https://twitter.com/search?q=%23${encodeURIComponent(cols[1])}" target="_blank">🐦</a> <a class="ig" href="https://www.instagram.com/explore/tags/${encodeURIComponent(cols[1])}" target="_blank">📸</a>`;
+      const cnLink = `${cols[2]} <a href="https://twitter.com/search?q=%23${encodeURIComponent(cols[2])}" target="_blank">🐦</a> <a class="ig" href="https://www.instagram.com/explore/tags/${encodeURIComponent(cols[2])}" target="_blank">📸</a>`;
+      const enLink = `${cols[3]} <a href="https://twitter.com/search?q=%23${encodeURIComponent(cols[3])}" target="_blank">🐦</a> <a class="ig" href="https://www.instagram.com/explore/tags/${encodeURIComponent(cols[3])}" target="_blank">📸</a>`;
 
       const tr = document.createElement('tr');
       tr.innerHTML = `
