@@ -34,7 +34,7 @@ fetch(csvUrl)
         if (!text) return '';
         return `
           <span class="cell-content">
-            <a href="https://twitter.com/search?q=%23${encodeURIComponent(text)}" target="_blank">
+            <a href="https://twitter.com/search?q=${encodeURIComponent(text)}" target="_blank">
               <img class="button-icon" src="${twitterIcon}" alt="Twitter">
             </a>
             <a href="https://www.instagram.com/explore/tags/${encodeURIComponent(text)}" target="_blank">
