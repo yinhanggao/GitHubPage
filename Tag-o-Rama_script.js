@@ -10,6 +10,7 @@ fetch(csvUrl)
     const rows = data.split('\n').slice(1);
     const tbody = document.querySelector('#csvTable tbody');
     let lastCategory = '';
+
     rows.forEach(row => {
       if (!row.trim()) return;
       const cols = row.split(',');
@@ -18,9 +19,17 @@ fetch(csvUrl)
       const cn = cols[2].trim();
       const en = cols[3].trim();
 
-      const displayCategory = category && category !== lastCategory ? category : '';
-      if (displayCategory) lastCategory = category;
+      // 新分類 → 插入一個分類列
+      if (category && category !== lastCategory) {
+        lastCategory = category;
+        const catRow = document.createElement('tr');
+        catRow.innerHTML = `
+          <td colspan="3" class="category-row">${category}</td>
+        `;
+        tbody.appendChild(catRow);
+      }
 
+      // 建立標籤單元格
       function createCell(text) {
         if (!text) return '';
         return `
@@ -39,9 +48,9 @@ fetch(csvUrl)
         `;
       }
 
+      // 插入標籤列
       const tr = document.createElement('tr');
       tr.innerHTML = `
-        <td>${displayCategory}</td>
         <td>${createCell(jp)}</td>
         <td>${createCell(cn)}</td>
         <td>${createCell(en)}</td>

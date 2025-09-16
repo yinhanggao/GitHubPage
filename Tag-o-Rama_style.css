@@ -85,3 +85,13 @@ span.cell-content .tag-text {
         margin-right: 3px;
     }
 }
+
+/* 分類列樣式 */
+.category-row {
+    background-color: #cce6ff;
+    font-weight: bold;
+    font-size: 1.1em;
+    text-align: center;
+    font-family: 'Arial Black', sans-serif;
+    color: #333333;
+}
