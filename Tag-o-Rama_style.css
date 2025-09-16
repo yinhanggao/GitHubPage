@@ -1,127 +1,101 @@
-/* ----------------- 基本樣式 ----------------- */
 body {
-    font-family: "Microsoft JhengHei", sans-serif;
-    padding: 10px;
-    background-color: #f9f9f9;
+    font-family: "Microsoft JhengHei", "Heiti TC", "Yu Gothic", "Hiragino Kaku Gothic ProN", "Noto Sans CJK JP", "Arial", sans-serif;
+    padding: 20px;
+    color: #000;
+    background: #fff;
 }
 
 h1 {
     text-align: center;
     margin-bottom: 15px;
-    font-size: 1.8rem;
 }
 
-/* ----------------- 表格樣式 ----------------- */
-table {
-    width: 50%;
+/* csvContainer 固定寬度 414px，置中 */
+#csvContainer {
+    width: 414px;
     margin: 0 auto;
-    border-collapse: collapse;
 }
 
-td {
-    padding: 8px;
-    text-align: left;
-    background-color: #fff;
-    vertical-align: middle;
+/* 分類列置中 */
+.category {
+    text-align: center;
+    font-weight: bold;
+    font-size: 1.2em;
+    margin: 10px 0;
 }
 
-/* ----------------- 指定三欄寬度 ----------------- */
-#csvTable td:nth-child(1) {
-    width: 33%;
-    /* JP */
+/* 每列 flex 排版 */
+.csv-row {
+    display: flex;
+    margin: 2px 0;
+    flex-wrap: wrap;
+    /* 自動換行 */
 }
 
-#csvTable td:nth-child(2) {
-    width: 34%;
-    /* CN */
-}
-
-#csvTable td:nth-child(3) {
-    width: 33%;
-    /* EN */
-}
-
-/* ----------------- 標籤 pill 上下排列 ----------------- */
-span.cell-content {
+/* 每個 pill 三欄比例 */
+.pill {
     display: flex;
     flex-direction: column;
     /* 上下排列 */
-    background-color: #e0f0ff;
-    border-radius: 12px;
-    padding: 4px 6px;
-    margin: 2px;
-    font-size: 0.9rem;
-    height: 3em;
-    /* 固定兩行高度 */
-    overflow: hidden;
-}
-
-/* 按鈕靠左 */
-span.cell-content .button-row {
-    display: flex;
-    gap: 4px;
     justify-content: flex-start;
-    /* 按鈕靠左 */
-    align-items: center;
-    margin-bottom: 2px;
-}
-
-/* 標籤文字靠右 */
-span.cell-content .tag-text {
-    display: block;
-    align-self: flex-end;
-    /* 文字靠右 */
     word-break: break-word;
+    white-space: normal;
+    height: auto;
+    font-size: 14px;
+    padding-bottom: 3px;
+    gap: 0.2em;
+    /* 上下間距 */
 }
 
-/* hover 效果 */
-span.cell-content:hover {
-    transform: scale(1.05);
-    background-color: #cce6ff;
-    transition: transform 0.2s, background-color 0.2s;
+/* 三欄上下對齊方式 */
+.pill.jp .top,
+.pill.jp .bottom {
+    text-align: right;
 }
 
-/* ----------------- 按鈕圖示 ----------------- */
-img.button-icon {
-    width: 18px;
-    height: 18px;
-    border-radius: 50%;
-    background-color: rgba(255, 255, 255, 0.8);
-    padding: 2px;
-    cursor: pointer;
-    vertical-align: middle;
-    transition: transform 0.2s, box-shadow 0.2s;
-}
-
-img.button-icon:hover {
-    transform: scale(1.3);
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
-}
-
-/* ----------------- 分類列 ----------------- */
-.category-row {
+.pill.cn .top,
+.pill.cn .bottom {
     text-align: center;
-    background-color: #cce6ff;
+}
+
+.pill.en .top,
+.pill.en .bottom {
+    text-align: left;
+}
+
+/* 三欄寬度 */
+.pill.jp {
+    width: 33%;
+}
+
+.pill.cn {
+    width: 34%;
+}
+
+.pill.en {
+    width: 33%;
+}
+
+/* @T @I @R 樣式 */
+.pill .top a {
+    margin-right: 0.3em;
+    text-decoration: none;
+    /* 移除底線 */
     font-weight: bold;
-    font-size: 1.1em;
-    font-family: 'Arial Black', sans-serif;
-    color: #333333;
 }
 
-/* ----------------- 響應式 ----------------- */
-@media (max-width: 600px) {
-    table {
-        width: 90%;
-    }
-
-    td {
-        padding: 6px;
-        font-size: 0.9rem;
-    }
-
-    img.button-icon {
-        width: 16px;
-        height: 16px;
-        padding: 1px;
-    }
+.pill .top a.twitter {
+    color: #4d90fe;
 }
+
+/* Twitter 藍偏淡 */
+.pill .top a.instagram {
+    color: #a9746e;
+}
+
+/* IG 咖啡偏淡 */
+.pill .top a.reddit {
+    color: #d2694e;
+}
+
+/* Reddit 紅偏淡 */
