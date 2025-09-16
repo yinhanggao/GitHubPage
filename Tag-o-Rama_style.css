@@ -1,5 +1,5 @@
 body {
-    font-family: "Microsoft JhengHei", "Heiti TC", "Yu Gothic", "Hiragino Kaku Gothic ProN", "Noto Sans CJK JP", "Arial", sans-serif;
+    font-family: monospace;
     padding: 20px;
     color: #000;
     background: #fff;
@@ -10,9 +10,9 @@ h1 {
     margin-bottom: 15px;
 }
 
-/* csvContainer 固定寬度 414px，置中 */
+/* csvContainer 固定寬度 400px，置中 */
 #csvContainer {
-    width: 414px;
+    width: 400px;
     margin: 0 auto;
 }
 
@@ -29,14 +29,12 @@ h1 {
     display: flex;
     margin: 2px 0;
     flex-wrap: wrap;
-    /* 自動換行 */
 }
 
 /* 每個 pill 三欄比例 */
 .pill {
     display: flex;
     flex-direction: column;
-    /* 上下排列 */
     justify-content: flex-start;
     word-break: break-word;
     white-space: normal;
@@ -44,7 +42,6 @@ h1 {
     font-size: 14px;
     padding-bottom: 3px;
     gap: 0.2em;
-    /* 上下間距 */
 }
 
 /* 三欄上下對齊方式 */
@@ -76,26 +73,27 @@ h1 {
     width: 33%;
 }
 
-/* @T @I @R 樣式 */
+/* @T @I @R 樣式：連續顯示、粗體、無底線 */
 .pill .top a {
-    margin-right: 0.3em;
     text-decoration: none;
-    /* 移除底線 */
     font-weight: bold;
+    margin: 0;
 }
 
+/* 有標籤文字時顏色 */
 .pill .top a.twitter {
     color: #4d90fe;
 }
 
-/* Twitter 藍偏淡 */
 .pill .top a.instagram {
     color: #a9746e;
 }
 
-/* IG 咖啡偏淡 */
 .pill .top a.reddit {
     color: #d2694e;
 }
 
-/* Reddit 紅偏淡 */
+/* 沒有標籤文字時顏色降低彩度 */
+.pill .top a.no-label {
+    color: #5f5f5f;
+}

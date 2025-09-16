@@ -28,53 +28,37 @@ fetch(csvUrl)
         const span = document.createElement('span');
         span.className = `pill ${cls}`;
 
-        // 上行 @T @I @R
         const top = document.createElement('div');
         top.className = 'top';
 
-        // @T
         const t = document.createElement('a');
         t.textContent = '@T';
+        const i = document.createElement('a');
+        i.textContent = '@I';
+        const r = document.createElement('a');
+        r.textContent = '@R';
+
         if (text) {
           t.href = `https://twitter.com/search?q=${encodeURIComponent(text)}`;
           t.target = '_blank';
           t.className = 'twitter';
-        } else {
-          t.style.color = '#000';
-          t.href = 'javascript:void(0)';
-        }
-
-        // @I
-        const i = document.createElement('a');
-        i.textContent = '@I';
-        if (text) {
           i.href = `https://www.instagram.com/explore/tags/${encodeURIComponent(text)}`;
           i.target = '_blank';
           i.className = 'instagram';
-        } else {
-          i.style.color = '#000';
-          i.href = 'javascript:void(0)';
-        }
-
-        // @R
-        const r = document.createElement('a');
-        r.textContent = '@R';
-        if (text) {
           r.href = `https://www.reddit.com/search/?q=${encodeURIComponent(text)}`;
           r.target = '_blank';
           r.className = 'reddit';
         } else {
-          r.style.color = '#000';
-          r.href = 'javascript:void(0)';
+          t.className = 'twitter no-label';
+          i.className = 'instagram no-label';
+          r.className = 'reddit no-label';
+          t.href = i.href = r.href = 'javascript:void(0)';
         }
 
         top.appendChild(t);
-        top.appendChild(document.createTextNode(' '));
         top.appendChild(i);
-        top.appendChild(document.createTextNode(' '));
         top.appendChild(r);
 
-        // 下行 標籤文字
         const bottom = document.createElement('div');
         bottom.className = 'bottom';
         bottom.textContent = text;
@@ -84,7 +68,6 @@ fetch(csvUrl)
         return span;
       }
 
-      // 一列三個欄位
       const p = document.createElement('p');
       p.className = 'csv-row';
       p.appendChild(createPill(jp, 'jp'));
