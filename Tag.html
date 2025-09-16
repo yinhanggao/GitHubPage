@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>CSV 表格</title>
+  <title>標籤表格</title>
   <style>
     body { 
       font-family: "Microsoft JhengHei", sans-serif; 
@@ -20,7 +20,14 @@
       background-color: #fff;
     }
     tr:not(:last-child) td {
-      border-bottom: 1px solid #eee; /* 淡淡分隔線，僅作行分隔 */
+      border-bottom: 1px solid #eee; /* 淡淡分隔線 */
+    }
+    a {
+      color: #1DA1F2;
+      text-decoration: none;
+    }
+    a:hover {
+      text-decoration: underline;
     }
   </style>
 </head>
@@ -47,12 +54,18 @@ fetch(csvUrl)
       const category = cols[0];
       const displayCategory = category !== lastCategory ? category : '';
       lastCategory = category;
+
+      // 建立 Twitter 搜尋連結，URL encode 標籤文字
+      const jpLink = `<a href="https://twitter.com/search?q=%23${encodeURIComponent(cols[1])}" target="_blank">${cols[1]}</a>`;
+      const cnLink = `<a href="https://twitter.com/search?q=%23${encodeURIComponent(cols[2])}" target="_blank">${cols[2]}</a>`;
+      const enLink = `<a href="https://twitter.com/search?q=%23${encodeURIComponent(cols[3])}" target="_blank">${cols[3]}</a>`;
+
       const tr = document.createElement('tr');
       tr.innerHTML = `
         <td>${displayCategory}</td>
-        <td>${cols[1]}</td>
-        <td>${cols[2]}</td>
-        <td>${cols[3]}</td>
+        <td>${jpLink}</td>
+        <td>${cnLink}</td>
+        <td>${enLink}</td>
       `;
       tbody.appendChild(tr);
     });
