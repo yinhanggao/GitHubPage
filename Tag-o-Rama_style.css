@@ -1,3 +1,4 @@
+/* ----------------- 基本樣式 ----------------- */
 body {
     font-family: "Microsoft JhengHei", sans-serif;
     padding: 10px;
@@ -10,8 +11,10 @@ h1 {
     font-size: 1.8rem;
 }
 
+/* ----------------- 表格樣式 ----------------- */
 table {
-    width: 100%;
+    width: 50%;
+    margin: 0 auto;
     border-collapse: collapse;
 }
 
@@ -22,41 +25,71 @@ td {
     vertical-align: middle;
 }
 
-tr:not(:last-child) td {
-    border-bottom: 1px solid #eee;
+/* ----------------- 指定三欄寬度 ----------------- */
+#csvTable td:nth-child(1) {
+    width: 33%;
+    /* JP */
 }
 
-/* 標籤 pill 樣式 */
+#csvTable td:nth-child(2) {
+    width: 34%;
+    /* CN */
+}
+
+#csvTable td:nth-child(3) {
+    width: 33%;
+    /* EN */
+}
+
+/* ----------------- 標籤 pill 上下排列 ----------------- */
 span.cell-content {
-    display: inline-flex;
-    align-items: center;
+    display: flex;
+    flex-direction: column;
+    /* 上下排列 */
     background-color: #e0f0ff;
-    /* 淡藍背景 */
     border-radius: 12px;
-    /* 圓角 pill */
-    padding: 2px 6px;
-    /* 內邊距 */
+    padding: 4px 6px;
     margin: 2px;
-    /* 標籤間距 */
     font-size: 0.9rem;
-    transition: transform 0.2s, background-color 0.2s;
+    height: 3em;
+    /* 固定兩行高度 */
+    overflow: hidden;
 }
 
+/* 按鈕靠左 */
+span.cell-content .button-row {
+    display: flex;
+    gap: 4px;
+    justify-content: flex-start;
+    /* 按鈕靠左 */
+    align-items: center;
+    margin-bottom: 2px;
+}
+
+/* 標籤文字靠右 */
+span.cell-content .tag-text {
+    display: block;
+    align-self: flex-end;
+    /* 文字靠右 */
+    word-break: break-word;
+}
+
+/* hover 效果 */
 span.cell-content:hover {
     transform: scale(1.05);
     background-color: #cce6ff;
-    /* 懸浮加深背景色 */
+    transition: transform 0.2s, background-color 0.2s;
 }
 
-/* 按鈕圖示 */
+/* ----------------- 按鈕圖示 ----------------- */
 img.button-icon {
     width: 18px;
     height: 18px;
     border-radius: 50%;
     background-color: rgba(255, 255, 255, 0.8);
     padding: 2px;
-    margin-right: 4px;
     cursor: pointer;
+    vertical-align: middle;
     transition: transform 0.2s, box-shadow 0.2s;
 }
 
@@ -65,14 +98,22 @@ img.button-icon:hover {
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
 }
 
-/* 標籤文字 */
-span.cell-content .tag-text {
-    margin-left: 2px;
-    font-weight: 500;
-    color: #333;
+/* ----------------- 分類列 ----------------- */
+.category-row {
+    text-align: center;
+    background-color: #cce6ff;
+    font-weight: bold;
+    font-size: 1.1em;
+    font-family: 'Arial Black', sans-serif;
+    color: #333333;
 }
 
+/* ----------------- 響應式 ----------------- */
 @media (max-width: 600px) {
+    table {
+        width: 90%;
+    }
+
     td {
         padding: 6px;
         font-size: 0.9rem;
@@ -82,16 +123,5 @@ span.cell-content .tag-text {
         width: 16px;
         height: 16px;
         padding: 1px;
-        margin-right: 3px;
     }
-}
-
-/* 分類列樣式 */
-.category-row {
-    background-color: #cce6ff;
-    font-weight: bold;
-    font-size: 1.1em;
-    text-align: center;
-    font-family: 'Arial Black', sans-serif;
-    color: #333333;
 }
