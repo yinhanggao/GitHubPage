@@ -20,26 +20,30 @@
 <li>可按取消按鈕停止下載</li>
 </ul>
 </h2>
+<div class="centered-container">
+  <div>
+    <div id="paste-area">
+      <span id="placeholder">請貼上或拖曳圖片</span>
+      <img id="preview">
+      <div id="progress-container"><div id="progress-bar"></div></div>
+    </div>
 
-<div id="paste-area">
-<span id="placeholder">請貼上或拖曳圖片</span>
-<img id="preview">
-<div id="progress-container"><div id="progress-bar"></div></div>
+    <div id="bottom-bar">
+      <div id="left-section">
+        <label>檔名:</label><input type="text" id="filename-input" value="20250917195808">
+        <label>類型:</label><select id="filetype-select">
+          <option value="jpg" selected>JPG</option>
+          <option value="png">PNG</option>
+          <option value="webp">WEBP</option>
+        </select>
+      </div>
+      <div id="right-section">
+        <button id="cancel-btn">取消</button>
+      </div>
+    </div>
+  </div>
 </div>
 
-<div id="bottom-bar">
-<div id="left-section">
-<label>檔名:</label><input type="text" id="filename-input">
-<label>類型:</label><select id="filetype-select">
-<option value="jpg" selected>JPG</option>
-<option value="png">PNG</option>
-<option value="webp">WEBP</option>
-</select>
-</div>
-<div id="right-section">
-<button id="cancel-btn">取消</button>
-</div>
-</div>
 <footer>© 2025 Image-Paste-Downloader Demo</footer>
 <script src="js/Image-Paste-Downloader.js" defer></script>
 </body>
