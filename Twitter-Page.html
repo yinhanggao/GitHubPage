@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <title>Twitter-Page</title>
+  <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
+  <style>
+    body {
+      font-family: "Arial", sans-serif;
+      background-color: #f5f7fa;
+      margin: 0;
+      padding: 0;
+    }
+
+    header {
+      background: #1da1f2;
+      color: white;
+      padding: 20px;
+      text-align: center;
+      font-size: 28px;
+      font-weight: bold;
+      box-shadow: 0 3px 6px rgba(0,0,0,0.1);
+    }
+
+    main {
+      max-width: 900px;
+      margin: 30px auto;
+      padding: 0 20px;
+    }
+
+    h2 {
+      background: #e8f5fd;
+      color: #1a1a1a;
+      padding: 15px;
+      border-radius: 12px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      font-size: 20px;
+      line-height: 1.5;
+    }
+
+    h2 ul {
+      margin: 10px 0 0 20px;
+      padding: 0;
+      list-style: disc;
+    }
+
+    #tweet-container {
+      margin-top: 30px;
+      display: flex;
+      flex-direction: column;
+      gap: 25px;
+    }
+
+    footer {
+      text-align: center;
+      padding: 20px;
+      color: #555;
+      font-size: 14px;
+    }
+
+    a {
+      color: #1da1f2;
+      text-decoration: none;
+    }
+
+    a:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+  <header>Twitter-Page</header>
+
+  <main>
+    <h2>
+      📌 使用說明：
+      <ul>
+        <li>打開 Google Sheet，在第一欄貼上想要嵌入的推文網址</li>
+        <li>每個推文網址一列，不放成人或敏感內容</li>
+        <li>網頁會自動讀取 Sheet，打開網頁即可看到新增貼文</li>
+        <li>第一列保留標題，程式會自動跳過</li>
+      </ul>
+    </h2>
+
+    <div id="tweet-container"></div>
+  </main>
+
+  <footer>© 2025 Twitter-Page Demo</footer>
+
+  <script>
+    const csvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQj2YzRRSrSV4RK4ESvsTSkizgRNPYjFzZDxMTxn-PGzuhZXxc1y4fIi43geRHgBJPggusWccWucOd8/pub?gid=286341113&single=true&output=csv';
+
+    async function fetchTweetUrls() {
+      const res = await fetch(csvUrl);
+      const text = await res.text();
+      const lines = text.split('\n').filter(l => l.trim() !== '');
+      return lines.slice(1).map(line => line.split(',')[0].trim());
+    }
+
+    function embedTweetById(tweetId, container) {
+      const div = document.createElement('div');
+      container.appendChild(div);
+      twttr.widgets.createTweet(tweetId, div, { align: 'center' })
+        .catch(err => console.error('Embed failed:', tweetId, err));
+    }
+
+    async function init() {
+      const container = document.getElementById('tweet-container');
+      const urls = await fetchTweetUrls();
+
+      urls.forEach(url => {
+        const parts = url.split("/status/");
+        if (parts.length >= 2) {
+          const tweetId = parts[1].split(/[?]/)[0];
+          embedTweetById(tweetId, container);
+        } else {
+          console.warn("網址格式錯誤，無法拆出 Tweet ID:", url);
+        }
+      });
+    }
+
+    window.addEventListener('load', () => {
+      if (window.twttr) init();
+      else console.error('Twitter widgets.js 尚未載入');
+    });
+  </script>
+</body>
+</html>
