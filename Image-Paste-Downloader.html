@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Image-Paste-Downloader</title>
+<style>
+body {
+    font-family: monospace;
+    padding: 20px;
+    color: #000;
+    background: #fff;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    box-sizing: border-box;
+    height: 100vh;
+}
+
+h1 {
+    text-align: center;
+    margin-bottom: 15px;
+}
+h2 {
+    text-align: left;
+    margin-bottom: 15px;
+}
+
+/* 框框容器 */
+#paste-area {
+    width: 50%;
+    height: 400px;
+    border: 3px dashed #4d90fe;
+    border-radius: 8px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: #888;
+    font-size: 18px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+    margin-bottom: 20px;
+}
+
+#paste-area.hover {
+    background-color: #f0f8ff;
+    color: #4d90fe;
+}
+
+#preview {
+    max-width: 100%;
+    max-height: 100%;
+    display: none;
+    object-fit: contain;
+}
+
+#progress-container {
+    position: absolute;
+    bottom: 10px;
+    width: 80%;
+    height: 20px;
+    background: #ddd;
+    border-radius: 10px;
+    overflow: hidden;
+    display: none;
+}
+
+#progress-bar {
+    width: 0%;
+    height: 100%;
+    background: #4d90fe;
+    transition: width 1s linear;
+}
+
+/* 底部區域 */
+#bottom-bar {
+    width: 50%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: auto;
+}
+
+#left-section {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+#right-section {
+    display: flex;
+    align-items: center;
+}
+
+input, select, button {
+    font-family: monospace;
+    font-size: 14px;
+    padding: 5px 10px;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+}
+
+button {
+    cursor: pointer;
+}
+</style>
+</head>
+<body>
+
+<h1>Image-Paste-Downloader</h1>
+
+<h2>
+📌 使用說明：
+<ul>
+    <li>複製或截圖圖片 (Ctrl+C / 右鍵複製) 或拖曳圖片到框框內</li>
+    <li>圖片會顯示在框框中央預覽</li>
+    <li>輸入檔名或使用預設時間，選擇檔案格式</li>
+    <li>進度條完成後圖片會自動下載</li>
+    <li>可按取消按鈕停止下載</li>
+</ul>
+</h2>
+
+<div id="paste-area">
+    <span id="placeholder">請貼上或拖曳圖片</span>
+    <img id="preview">
+    <div id="progress-container">
+        <div id="progress-bar"></div>
+    </div>
+</div>
+
+<div id="bottom-bar">
+    <div id="left-section">
+        <label>檔名:</label>
+        <input type="text" id="filename-input">
+        <label>類型:</label>
+        <select id="filetype-select">
+            <option value="jpg" selected>JPG</option>
+            <option value="png">PNG</option>
+            <option value="webp">WEBP</option>
+        </select>
+    </div>
+    <div id="right-section">
+        <button id="cancel-btn">取消</button>
+    </div>
+</div>
+
+<script>
+const pasteArea = document.getElementById('paste-area');
+const placeholder = document.getElementById('placeholder');
+const preview = document.getElementById('preview');
+const progressContainer = document.getElementById('progress-container');
+const progressBar = document.getElementById('progress-bar');
+const cancelBtn = document.getElementById('cancel-btn');
+const filenameInput = document.getElementById('filename-input');
+const filetypeSelect = document.getElementById('filetype-select');
+
+let currentBlob = null;
+let timer = null;
+let cancelled = false;
+
+function getCurrentTimestamp() {
+    const now = new Date();
+    return now.getFullYear().toString() +
+        String(now.getMonth()+1).padStart(2,'0') +
+        String(now.getDate()).padStart(2,'0') +
+        String(now.getHours()).padStart(2,'0') +
+        String(now.getMinutes()).padStart(2,'0') +
+        String(now.getSeconds()).padStart(2,'0');
+}
+
+filenameInput.value = getCurrentTimestamp();
+
+function handleImageFile(file) {
+    if (!file.type.startsWith('image/')) return;
+    currentBlob = file;
+    cancelled = false;
+
+    const url = URL.createObjectURL(currentBlob);
+    preview.src = url;
+    preview.style.display = 'block';
+    placeholder.style.display = 'none';
+
+    progressContainer.style.display = 'block';
+    progressBar.style.width = '0%';
+    setTimeout(() => { progressBar.style.width = '100%'; }, 50);
+
+    timer = setTimeout(() => {
+        progressContainer.style.display = 'none';
+        if (!cancelled) downloadImage();
+    }, 1000);
+}
+
+function downloadImage() {
+    if (!currentBlob) return;
+    let filename = filenameInput.value || getCurrentTimestamp();
+    const ext = filetypeSelect.value;
+    filename = filename.replace(/\.[^/.]+$/, "") + '.' + ext;
+
+    const url = URL.createObjectURL(currentBlob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    a.click();
+    URL.revokeObjectURL(url);
+
+    currentBlob = null;
+    preview.style.display = 'none';
+    placeholder.style.display = 'block';
+    filenameInput.value = getCurrentTimestamp();
+}
+
+pasteArea.addEventListener('paste', e => {
+    const items = e.clipboardData.items;
+    for (const item of items) { handleImageFile(item.getAsFile()); return; }
+});
+
+pasteArea.addEventListener('dragover', e => { e.preventDefault(); pasteArea.classList.add('hover'); });
+pasteArea.addEventListener('dragleave', () => pasteArea.classList.remove('hover'));
+pasteArea.addEventListener('drop', e => {
+    e.preventDefault();
+    pasteArea.classList.remove('hover');
+    if (e.dataTransfer.files.length > 0) handleImageFile(e.dataTransfer.files[0]);
+});
+
+cancelBtn.addEventListener('click', () => {
+    cancelled = true;
+    clearTimeout(timer);
+    progressBar.style.width = '0%';
+    progressContainer.style.display = 'none';
+});
+</script>
+
+</body>
+</html>
