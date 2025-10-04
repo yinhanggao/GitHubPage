@@ -88,6 +88,7 @@ footer {
     display: flex;
     margin: 2px 0;
     flex-wrap: wrap;
+    justify-content: center;
 }
 
 .pill {
