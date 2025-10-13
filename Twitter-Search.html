@@ -27,8 +27,15 @@ th input[type="checkbox"] { cursor: pointer; }
 </style>
 </head>
 <body>
-<h1>TwitterSearch</h1>
-
+<h1>Twitter-Search</h1>
+<h2>📌 使用說明：
+<ul>
+  <li>在 Google Sheet 第一欄貼上關鍵字，每列一個，可包含運算子，程式會自動去掉運算子但保留 #。</li>
+  <li>打開網頁即可自動讀取 Sheet，生成表格列表。</li>
+  <li>表格可勾選核取框、設定愛心數、日期範圍和排序，每列有 🔗 單列搜尋按鈕。</li>
+  <li>點擊 🔗 搜尋單列，或勾選多列後點擊 🌐 開啟已選搜尋，生成對應 Twitter/X 搜尋連結。</li>
+</ul>
+</h2>
 <table id="searchTable">
   <thead>
     <tr>
