@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<title>Patreon-Sims4-List</title>
+<link rel="stylesheet" href="css/style.css">
+
+<style>
+.card { background: white; border-radius: 12px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        padding: 16px; margin-bottom: 20px; display: flex; align-items: flex-start; gap: 16px; }
+img { width: 100px; height: 100px; object-fit: cover; border-radius: 8px; }
+.info { flex: 1; }
+.desc { color: #555; margin-top: 8px; }
+#cards-container {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr); /* 一行 4 張卡 */
+    gap: 20px;
+    justify-self: center;
+    align-self: center;
+    }
+</style>
+</head>
+<body>
+<h1>Patreon-Sims4-List</h1>
+
+<div id="cards-container"></div>
+
+<script>
+// Google Sheets CSV 連結
+const csvUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQj2YzRRSrSV4RK4ESvsTSkizgRNPYjFzZDxMTxn-PGzuhZXxc1y4fIi43geRHgBJPggusWccWucOd8/pub?gid=2089443781&single=true&output=csv";
+
+async function loadCSV(url) {
+    const response = await fetch(url);
+    const text = await response.text();
+    return text;
+}
+
+function parseCSV(csvText) {
+    const lines = csvText.trim().split("\n");
+    const headers = lines[0].split(",");
+    const data = lines.slice(1).map(line => {
+        const values = line.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/); // 支援逗號內的引號
+        let obj = {};
+        headers.forEach((header, i) => {
+            obj[header.trim()] = values[i] ? values[i].trim() : "";
+        });
+        return obj;
+    });
+    return data;
+}
+
+function renderCards(data) {
+    const container = document.getElementById("cards-container");
+    data.forEach(item => {
+        const card = document.createElement("div");
+        card.className = "card";
+
+        const img = document.createElement("img");
+        img.src = item["圖片網址"];
+        img.alt = item["名稱"];
+
+        const info = document.createElement("div");
+        info.className = "info";
+
+        const a = document.createElement("a");
+        a.href = item["頁面網址"];
+        a.target = "_blank";
+
+        const h3 = document.createElement("h3");
+        h3.textContent = item["名稱"];
+
+        a.appendChild(h3);
+        const p = document.createElement("p");
+        p.className = "desc";
+        p.textContent = item["簡介"];
+
+        info.appendChild(a);
+        info.appendChild(p);
+
+        card.appendChild(img);
+        card.appendChild(info);
+
+        container.appendChild(card);
+    });
+}
+
+// 主流程
+loadCSV(csvUrl).then(csvText => {
+    const data = parseCSV(csvText);
+    renderCards(data);
+});
+</script>
+<footer>© 2025 Patreon-Sims4-List Demo</footer>
+</body>
+</html>
