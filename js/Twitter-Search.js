@@ -56,15 +56,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
             // 關鍵字
             const tdKeyword = document.createElement("td");
-            // 去掉括號和 AND/OR，但保留 #
-            const cleanKeyword = keyword
-                .replace(/\(|\)/g, "")        // 去掉括號
-                .replace(/\bAND\b|\bOR\b/g, "") // 去掉 AND 和 OR
-                .replace(/\s+/g, " ")          // 多空格合併
-                .trim();
-
-            tdKeyword.textContent = cleanKeyword;
+            // ✅ 不要清理語法，直接顯示原始字串
+            tdKeyword.textContent = keyword;
             tr.appendChild(tdKeyword);
+
+
             // 愛心數
             tr.appendChild(createBtnGroup(["any", 10, 100], 10, "❤️"));
 
@@ -136,9 +132,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // 🌐 開啟已選搜尋
     document.getElementById("openSelected").addEventListener("click", () => {
-        document.querySelectorAll("#searchTable tbody tr").forEach(tr => {
-            const cb = tr.querySelector("input[type=checkbox]");
-            if (cb.checked) {
+        const selectedRows = [...document.querySelectorAll("#searchTable tbody tr")].filter(
+            tr => tr.querySelector("input[type=checkbox]").checked
+        );
+        selectedRows.forEach((tr, i) => {
+            setTimeout(() => {
                 const keyword = tr.cells[1].textContent;
                 const faves = tr.cells[2].querySelector(".btn-group").dataset.value;
                 const days = tr.cells[3].querySelector(".btn-group").dataset.value;
@@ -155,7 +153,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 if (sinceDate) url += `%20since%3A${sinceDate}%20until%3A${until}`;
                 url += `&src=typed_query&f=${sort}`;
                 window.open(url, "_blank");
-            }
+            }, i * 100); // 每0.5秒開一個分頁
         });
     });
 
