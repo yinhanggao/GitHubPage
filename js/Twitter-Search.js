@@ -74,7 +74,9 @@ document.addEventListener("DOMContentLoaded", () => {
             const tdLink = document.createElement("td");
             const linkBtn = document.createElement("button");
             linkBtn.textContent = "🔗";
-            linkBtn.addEventListener("click", () => {
+
+            // 抽出共用的開啟搜尋函數
+            function openSearch() {
                 const faves = tr.cells[2].querySelector(".btn-group").dataset.value;
                 const days = tr.cells[3].querySelector(".btn-group").dataset.value;
                 const sort = tr.cells[4].querySelector(".btn-group").dataset.value;
@@ -84,13 +86,28 @@ document.addEventListener("DOMContentLoaded", () => {
                 if (days !== "any") {
                     sinceDate = new Date(today.getTime() - days * 24 * 60 * 60 * 1000).toISOString().split("T")[0];
                 }
-                let query = keyword;
+
+                // ✅ 如果有 tr.dataset.rawKeyword 則使用原始語法，否則用現有 keyword
+                let query = tr.dataset.rawKeyword || keyword;
+
                 if (faves !== "any") query += " min_faves:" + faves;
                 let url = `https://x.com/search?q=${encodeURIComponent(query)}`;
                 if (sinceDate) url += `%20since%3A${sinceDate}%20until%3A${until}`;
                 url += `&src=typed_query&f=${sort}`;
                 window.open(url, "_blank");
+            }
+
+            // 左鍵點擊觸發
+            linkBtn.addEventListener("click", openSearch);
+
+            // ✅ 新增：中鍵點擊觸發
+            linkBtn.addEventListener("auxclick", (e) => {
+                if (e.button === 1) { // 1 = 中鍵
+                    e.preventDefault(); // 防止瀏覽器預設中鍵開新分頁行為
+                    openSearch();
+                }
             });
+
             tdLink.appendChild(linkBtn);
             tr.appendChild(tdLink);
 
