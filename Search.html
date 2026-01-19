@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>快速搜尋工具</title>
+    <title>Search</title>
+    <link rel="stylesheet" href="css/style.css">
     <link rel="icon" href="favicon.ico" type="image/x-icon">
     <style>
         body {
@@ -15,51 +16,13 @@
             margin: 0;
             background-color: #f5f5f7;
         }
-        .container {
-            background: white;
-            padding: 2rem;
-            border-radius: 12px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
-            width: 100%;
-            max-width: 400px;
-            text-align: center;
-        }
-        h2 { color: #333; margin-bottom: 1.5rem; }
-        input {
-            width: 100%;
-            padding: 12px;
-            margin-bottom: 1rem;
-            border: 1px solid #ddd;
-            border-radius: 6px;
-            font-size: 16px;
-            box-sizing: border-box;
-        }
-        button {
-            width: 100%;
-            padding: 12px;
-            background-color: #007AFF;
-            color: white;
-            border: none;
-            border-radius: 6px;
-            font-size: 16px;
-            cursor: pointer;
-            transition: background 0.3s;
-        }
-        button:hover {
-            background-color: #0056b3;
-        }
-        .note {
-            margin-top: 1rem;
-            font-size: 12px;
-            color: #888;
-        }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <input type="text" id="searchInput" placeholder="..." autofocus>
-    <button onclick="performSearch()">🔍</button>
+    <input type="text" id="searchInput" placeholder="" autofocus>
+    <button onclick="performSearch()">Search</button>
 </div>
 
 <script>
