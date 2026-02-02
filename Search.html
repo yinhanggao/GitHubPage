@@ -1,53 +1,189 @@
 <!DOCTYPE html>
-<html lang="zh-TW">
+<html lang="zh-Hant">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Search</title>
-    <link rel="stylesheet" href="css/style.css">
-    <link rel="icon" href="favicon.ico" type="image/x-icon">
     <style>
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
-            background-color: #f5f5f7;
+        body { font-family: sans-serif; margin: 0; padding: 20px 0; background: #0c0c0c; color: #ccc; font-size: 12px; display: flex; justify-content: center; }
+        
+        .main-container { width: 95%; max-width: 900px; display: flex; flex-direction: column; }
+
+        /* 頂部搜尋欄 */
+        .header { display: flex; gap: 0; margin-bottom: 15px; position: sticky; top: 0; background: #0c0c0c; padding: 10px 0; z-index: 100; border-bottom: 1px solid #222; }
+        .search-box { flex: 1; display: flex; }
+        input[type="text"] { flex: 1; padding: 8px 12px; border: 1px solid #333; border-radius: 4px 0 0 4px; background: #181818; color: #fff; outline: none; font-size: 14px; }
+        input[type="text"]:focus { border-color: #007bff; }
+        button#mainSearch { padding: 8px 20px; cursor: pointer; background: #007bff; color: white; border: none; border-radius: 0 4px 4px 0; font-weight: bold; }
+        
+        .btn-toggle { margin-left: 10px; padding: 8px 12px; font-size: 11px; cursor: pointer; background: #222; color: #aaa; border: 1px solid #333; border-radius: 4px; white-space: nowrap; }
+
+        /* 分類列 */
+        .tag-row { display: flex; align-items: flex-start; margin-bottom: 6px; padding: 6px 10px; background: #161616; border-radius: 6px; border: 1px solid #222; cursor: pointer; }
+        .tag-label { min-width: 80px; font-weight: bold; color: #00d4ff; font-size: 11px; flex-shrink: 0; padding-top: 4px; }
+
+        .site-container { display: flex; flex-wrap: wrap; gap: 5px; flex: 1; }
+
+        /* 隱藏原生 Checkbox */
+        .site-item input { display: none; }
+
+        /* 網站標籤樣式 (未選中) */
+        .site-item { 
+            display: flex; align-items: center; gap: 5px; padding: 3px 8px; 
+            background: #222; border-radius: 4px; cursor: pointer; 
+            border: 1px solid #333; transition: all 0.1s ease; 
+            user-select: none; color: #888;
         }
+
+        /* 網站標籤樣式 (選中後反白) */
+        .site-item.active { 
+            background: #007bff; 
+            color: #fff; 
+            border-color: #00bfff;
+            box-shadow: 0 0 8px rgba(0, 123, 255, 0.4);
+        }
+
+        .site-icon { width: 14px; height: 14px; object-fit: contain; background: #fff; padding: 1px; border-radius: 2px; flex-shrink: 0; }
+        
+        .footer { font-size: 10px; color: #444; text-align: center; margin-top: 15px; }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <input type="text" id="searchInput" placeholder="" autofocus>
-    <button onclick="performSearch()">Search</button>
-</div>
-<br>
-<script>
-    function performSearch() {
-        const keyword = document.getElementById('searchInput').value.trim();
-        
-        if (keyword) {
-            // 定義搜尋網址
-            const url1 = `https://missav.ws/search/${encodeURIComponent(keyword)}`;
-            const url2 = `https://jable.tv/search/${encodeURIComponent(keyword)}/`;
+    <div class="main-container">
+        <div class="header">
+            <div class="search-box">
+                <input type="text" id="searchInput" placeholder="輸入關鍵字..." autocomplete="off">
+                <button id="mainSearch" onclick="startSearch()">搜尋</button>
+            </div>
+            <button class="btn-toggle" onclick="toggleAllGlobal()">全選/清空</button>
+        </div>
 
-            // 開啟新分頁
-            window.open(url1, '_blank');
-            window.open(url2, '_blank');
-        } else {
-            alert('請輸入或貼上文字');
-        }
-    }
+        <div id="content"></div>
+        <div class="footer">© 2026 huh Demo</div>
+    </div>
 
-    // 支援按下 Enter 鍵搜尋
-    document.getElementById('searchInput').addEventListener('keypress', function (e) {
-        if (e.key === 'Enter') {
-            performSearch();
+    <script>
+        const CSV_PATH = 'assets/searchweb.csv';
+        let siteData = [];
+
+        function getIcon(url) {
+            return `https://www.google.com/s2/favicons?sz=32&domain=${new URL(url).hostname}`;
         }
-    });
-</script>
+
+        async function init() {
+            try {
+                const res = await fetch(CSV_PATH);
+                const text = await res.text();
+                const rows = text.split('\n').filter(l => l.trim() !== "").slice(1);
+                const prefs = JSON.parse(localStorage.getItem('searchPrefs') || '{}');
+
+                const groups = {};
+                rows.forEach((row, i) => {
+                    const cols = row.split(',');
+                    if (cols.length < 3) return;
+                    const site = { id: i, name: cols[0].trim(), url: cols[1].trim(), tag: cols[2].trim() };
+                    siteData.push(site);
+                    if (!groups[site.tag]) groups[site.tag] = [];
+                    groups[site.tag].push(site);
+                });
+                render(groups, prefs);
+            } catch (err) { console.error(err); }
+        }
+
+        function render(groups, prefs) {
+            const container = document.getElementById('content');
+            for (const [tag, sites] of Object.entries(groups)) {
+                const row = document.createElement('div');
+                row.className = 'tag-row';
+                row.onclick = (e) => {
+                    // 只有點擊整列（非個別網站）時觸發列全選
+                    if (!e.target.closest('.site-item')) toggleTag(tag);
+                };
+
+                row.innerHTML = `
+                    <div class="tag-label"># ${tag}</div>
+                    <div class="site-container" id="g-${tag}"></div>
+                `;
+                container.appendChild(row);
+
+                const grid = document.getElementById(`g-${tag}`);
+                sites.forEach(s => {
+                    const checked = prefs[s.name] !== false;
+                    const label = document.createElement('label');
+                    label.className = `site-item ${checked ? 'active' : ''}`;
+                    label.dataset.name = s.name;
+                    label.dataset.tag = tag;
+                    
+                    label.innerHTML = `
+                        <input type="checkbox" value="${s.id}" ${checked ? 'checked' : ''}>
+                        <img src="${getIcon(s.url)}" class="site-icon">
+                        <span>${s.name}</span>
+                    `;
+
+                    // 點擊單個網站切換反白狀態
+                    label.onclick = (e) => {
+                        const cb = label.querySelector('input');
+                        cb.checked = !cb.checked;
+                        label.classList.toggle('active', cb.checked);
+                        save();
+                        e.stopPropagation();
+                    };
+
+                    grid.appendChild(label);
+                });
+            }
+        }
+
+        function toggleAllGlobal() {
+            const items = document.querySelectorAll('.site-item');
+            const someUnchecked = Array.from(items).some(item => !item.querySelector('input').checked);
+            items.forEach(item => {
+                const cb = item.querySelector('input');
+                cb.checked = someUnchecked;
+                item.classList.toggle('active', someUnchecked);
+            });
+            save();
+        }
+
+        function toggleTag(t) {
+            const items = document.querySelectorAll(`.site-item[data-tag="${t}"]`);
+            const someUnchecked = Array.from(items).some(item => !item.querySelector('input').checked);
+            items.forEach(item => {
+                const cb = item.querySelector('input');
+                cb.checked = someUnchecked;
+                item.classList.toggle('active', someUnchecked);
+            });
+            save();
+        }
+
+        function save() {
+            const p = {};
+            document.querySelectorAll('.site-item').forEach(item => {
+                const name = item.dataset.name;
+                const checked = item.querySelector('input').checked;
+                p[name] = checked;
+            });
+            localStorage.setItem('searchPrefs', JSON.stringify(p));
+        }
+
+        async function startSearch() {
+            const input = document.getElementById('searchInput');
+            const kw = input.value.trim();
+            if (!kw) return;
+            const sel = Array.from(document.querySelectorAll('.site-item input:checked')).map(c => siteData[c.value]);
+            input.value = '';
+            for (let i = 0; i < sel.length; i++) {
+                window.open(sel[i].url.replace('KEYWORD', encodeURIComponent(kw)), '_blank');
+                if (i < sel.length - 1) await new Promise(r => setTimeout(r, 800));
+            }
+        }
+
+        document.getElementById('searchInput').addEventListener('keypress', e => { 
+            if(e.key === 'Enter') startSearch(); 
+        });
+
+        init();
+    </script>
 </body>
 </html>
