@@ -1,22 +1,102 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-Hant">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>GitHubPage-Home</title>
-<link rel="stylesheet" href="css/style.css">
-<link rel="icon" href="favicon.ico" type="image/x-icon">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YinHangGao 的專案首頁</title>
+    <style>
+        :root { --primary: #007bff; --bg: #f8f9fa; --card-bg: #ffffff; }
+        body { font-family: -apple-system, sans-serif; background: var(--bg); margin: 0; padding: 40px 20px; color: #333; display: flex; justify-content: center; }
+        .container { width: 100%; max-width: 800px; }
+        
+        header { text-align: center; margin-bottom: 40px; }
+        h1 { font-size: 24px; color: #212529; margin-bottom: 10px; }
+        .profile-link { color: var(--primary); text-decoration: none; font-weight: 500; }
+
+        /* 專案列表佈局 */
+        #repo-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 15px; }
+        
+        .repo-card { 
+            background: var(--card-bg); border-radius: 12px; padding: 20px; 
+            text-decoration: none; color: inherit; border: 1px solid #e0e0e0;
+            transition: all 0.2s ease; display: flex; flex-direction: column;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+        }
+        .repo-card:hover { 
+            transform: translateY(-3px); border-color: var(--primary); 
+            box-shadow: 0 10px 20px rgba(0,0,0,0.05); 
+        }
+        
+        .repo-name { font-size: 18px; font-weight: bold; color: var(--primary); margin-bottom: 8px; }
+        .repo-desc { font-size: 13px; color: #666; line-height: 1.5; flex-grow: 1; margin-bottom: 15px; }
+        .repo-meta { font-size: 11px; color: #aaa; display: flex; justify-content: space-between; }
+        
+        /* 載入中動畫 */
+        .loader { text-align: center; color: #aaa; padding: 50px; }
+    </style>
 </head>
 <body>
 
-<h1>huh</h1>
+<div class="container">
+    <header>
+        <h1>🚀 YinHangGao Project Hub</h1>
+        <a class="profile-link" href="https://github.com/yinhanggao" target="_blank">@yinhanggao on GitHub</a>
+    </header>
 
-<nav>
-    <ul>
-        <li><a href="Twitter-Search.html">Twitter-Search.html</a></li>
-        <li><a href="Search.html">Search.html</a></li>
-    </ul>
-</nav>
-<footer>© 2025 huh Demo</footer>
+    <div id="repo-list">
+        <div class="loader">正在掃描 GitHub 專案...</div>
+    </div>
+
+    <footer style="text-align: center; margin-top: 50px; color: #bbb; font-size: 12px;">
+        此頁面會自動同步所有開啟 GitHub Pages 的專案
+    </footer>
+</div>
+
+<script>
+    const USERNAME = 'yinhanggao';
+
+    async function getPagesRepos() {
+        const listContainer = document.getElementById('repo-list');
+        try {
+            // 抓取該使用者的所有公開專案
+            const response = await fetch(`https://api.github.com/users/${USERNAME}/repos?sort=updated&per_page=100`);
+            const repos = await response.json();
+            
+            listContainer.innerHTML = ''; // 清除載入文字
+
+            repos.forEach(repo => {
+                // 邏輯：如果專案有開啟 Pages 功能 (has_pages) 且不是當前這個導航頁
+                // 如果你想連這個 GitHubPage 專案也顯示，可以把 repo.name !== 'GitHubPage' 拿掉
+                if (repo.has_pages && repo.name !== 'GitHubPage') {
+                    const card = document.createElement('a');
+                    card.className = 'repo-card';
+                    card.href = `https://${USERNAME}.github.io/${repo.name}/`;
+                    card.target = "_blank";
+
+                    card.innerHTML = `
+                        <div class="repo-name">${repo.name}</div>
+                        <div class="repo-desc">${repo.description || '這是一個很酷的專案，但作者還沒寫簡介。'}</div>
+                        <div class="repo-meta">
+                            <span>⭐ ${repo.stargazers_count}</span>
+                            <span>📅 更新於 ${new Date(repo.updated_at).toLocaleDateString()}</span>
+                        </div>
+                    `;
+                    listContainer.appendChild(card);
+                }
+            });
+
+            if(listContainer.innerHTML === '') {
+                listContainer.innerHTML = '<div class="loader">目前沒有公開的 Pages 專案</div>';
+            }
+
+        } catch (error) {
+            listContainer.innerHTML = '<div class="loader">讀取失敗，請稍後再試</div>';
+            console.error(error);
+        }
+    }
+
+    getPagesRepos();
+</script>
+
 </body>
 </html>
