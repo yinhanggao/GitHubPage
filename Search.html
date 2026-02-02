@@ -3,49 +3,52 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Search</title>
+    <title>私人搜尋站</title>
     <style>
-        body { font-family: sans-serif; margin: 0; padding: 20px 0; background: #0c0c0c; color: #ccc; font-size: 12px; display: flex; justify-content: center; }
+        body { font-family: -apple-system, sans-serif; margin: 0; padding: 20px 0; background: #f0f2f5; color: #333; font-size: 12px; display: flex; justify-content: center; }
         
-        .main-container { width: 95%; max-width: 900px; display: flex; flex-direction: column; }
+        .main-container { width: 95%; max-width: 450px; display: flex; flex-direction: column; }
 
         /* 頂部搜尋欄 */
-        .header { display: flex; gap: 0; margin-bottom: 15px; position: sticky; top: 0; background: #0c0c0c; padding: 10px 0; z-index: 100; border-bottom: 1px solid #222; }
+        .header { display: flex; gap: 0; margin-bottom: 15px; position: sticky; top: 0; background: #f0f2f5; padding: 10px 0; z-index: 100; border-bottom: 2px solid #ddd; }
         .search-box { flex: 1; display: flex; }
-        input[type="text"] { flex: 1; padding: 8px 12px; border: 1px solid #333; border-radius: 4px 0 0 4px; background: #181818; color: #fff; outline: none; font-size: 14px; }
-        input[type="text"]:focus { border-color: #007bff; }
-        button#mainSearch { padding: 8px 20px; cursor: pointer; background: #007bff; color: white; border: none; border-radius: 0 4px 4px 0; font-weight: bold; }
+        input[type="text"] { flex: 1; padding: 10px 14px; border: 1px solid #ccc; border-radius: 6px 0 0 6px; background: #fff; color: #000; outline: none; font-size: 14px; transition: 0.2s; }
+        input[type="text"]:focus { border-color: #007bff; box-shadow: inset 0 1px 2px rgba(0,0,0,0.1); }
+        button#mainSearch { padding: 10px 24px; cursor: pointer; background: #007bff; color: white; border: none; border-radius: 0 6px 6px 0; font-weight: bold; font-size: 14px; }
+        button#mainSearch:hover { background: #0056b3; }
         
-        .btn-toggle { margin-left: 10px; padding: 8px 12px; font-size: 11px; cursor: pointer; background: #222; color: #aaa; border: 1px solid #333; border-radius: 4px; white-space: nowrap; }
+        .btn-toggle { margin-left: 12px; padding: 10px 15px; font-size: 12px; cursor: pointer; background: #fff; color: #555; border: 1px solid #ccc; border-radius: 6px; white-space: nowrap; font-weight: 500; }
+        .btn-toggle:hover { background: #f1f1f1; border-color: #bbb; }
 
         /* 分類列 */
-        .tag-row { display: flex; align-items: flex-start; margin-bottom: 6px; padding: 6px 10px; background: #161616; border-radius: 6px; border: 1px solid #222; cursor: pointer; }
-        .tag-label { min-width: 80px; font-weight: bold; color: #00d4ff; font-size: 11px; flex-shrink: 0; padding-top: 4px; }
+        .tag-row { display: flex; align-items: flex-start; margin-bottom: 8px; padding: 8px 12px; background: #fff; border-radius: 8px; border: 1px solid #e0e0e0; cursor: pointer; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+        .tag-row:hover { border-color: #007bff; background: #fafafa; }
+        .tag-label { min-width: 85px; font-weight: bold; color: #007bff; font-size: 11px; flex-shrink: 0; padding-top: 5px; text-transform: uppercase; }
 
-        .site-container { display: flex; flex-wrap: wrap; gap: 5px; flex: 1; }
+        .site-container { display: flex; flex-wrap: wrap; gap: 6px; flex: 1; }
 
         /* 隱藏原生 Checkbox */
         .site-item input { display: none; }
 
         /* 網站標籤樣式 (未選中) */
         .site-item { 
-            display: flex; align-items: center; gap: 5px; padding: 3px 8px; 
-            background: #222; border-radius: 4px; cursor: pointer; 
-            border: 1px solid #333; transition: all 0.1s ease; 
-            user-select: none; color: #888;
+            display: flex; align-items: center; gap: 6px; padding: 4px 10px; 
+            background: #f1f3f5; border-radius: 10px; cursor: pointer; 
+            border: 1px solid #e9ecef; transition: all 0.15s ease; 
+            user-select: none; color: #495057; font-weight: 500;
         }
+        .site-item:hover { background: #e9ecef; }
 
         /* 網站標籤樣式 (選中後反白) */
         .site-item.active { 
-            background: #007bff; 
+            background: #212529; 
             color: #fff; 
-            border-color: #00bfff;
-            box-shadow: 0 0 8px rgba(0, 123, 255, 0.4);
+            border-color: #212529;
         }
 
-        .site-icon { width: 14px; height: 14px; object-fit: contain; background: #fff; padding: 1px; border-radius: 2px; flex-shrink: 0; }
+        .site-icon { width: 14px; height: 14px; object-fit: contain; background: #fff; padding: 1px; border-radius: 50%; flex-shrink: 0; border: 1px solid #eee; }
         
-        .footer { font-size: 10px; color: #444; text-align: center; margin-top: 15px; }
+        .footer { font-size: 11px; color: #888; text-align: center; margin-top: 20px; }
     </style>
 </head>
 <body>
@@ -60,7 +63,7 @@
         </div>
 
         <div id="content"></div>
-        <div class="footer">© 2026 huh Demo</div>
+        <div class="footer">© 2025 huh Demo</div>
     </div>
 
     <script>
@@ -68,7 +71,7 @@
         let siteData = [];
 
         function getIcon(url) {
-            return `https://www.google.com/s2/favicons?sz=32&domain=${new URL(url).hostname}`;
+            return `https://www.google.com/s2/favicons?sz=64&domain=${new URL(url).hostname}`;
         }
 
         async function init() {
@@ -88,7 +91,7 @@
                     groups[site.tag].push(site);
                 });
                 render(groups, prefs);
-            } catch (err) { console.error(err); }
+            } catch (err) { console.error("初始化失敗:", err); }
         }
 
         function render(groups, prefs) {
@@ -97,7 +100,6 @@
                 const row = document.createElement('div');
                 row.className = 'tag-row';
                 row.onclick = (e) => {
-                    // 只有點擊整列（非個別網站）時觸發列全選
                     if (!e.target.closest('.site-item')) toggleTag(tag);
                 };
 
@@ -121,7 +123,6 @@
                         <span>${s.name}</span>
                     `;
 
-                    // 點擊單個網站切換反白狀態
                     label.onclick = (e) => {
                         const cb = label.querySelector('input');
                         cb.checked = !cb.checked;
@@ -160,9 +161,7 @@
         function save() {
             const p = {};
             document.querySelectorAll('.site-item').forEach(item => {
-                const name = item.dataset.name;
-                const checked = item.querySelector('input').checked;
-                p[name] = checked;
+                p[item.dataset.name] = item.querySelector('input').checked;
             });
             localStorage.setItem('searchPrefs', JSON.stringify(p));
         }
