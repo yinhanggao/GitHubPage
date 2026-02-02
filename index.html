@@ -25,7 +25,7 @@
             transition: all 0.2s ease;
             display: flex;
             align-items: center;
-            justify-content: center;
+            justify-content: space-between; /* 讓文字和圖標分開 */
             box-shadow: 0 2px 4px rgba(0,0,0,0.05);
         }
         
@@ -37,28 +37,80 @@
             box-shadow: 0 4px 12px rgba(0,123,255,0.2);
         }
 
-        .icon { margin-right: 12px; font-size: 22px; }
+        .icon { font-size: 22px; }
+        .name-tag { display: flex; align-items: center; }
+        .file-name { font-size: 12px; opacity: 0.6; margin-left: 10px; font-weight: normal; }
         
         footer { margin-top: 40px; color: #888; font-size: 12px; }
+
+        /* 讀取動畫 */
+        .loading { color: #888; font-style: italic; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <div class="nav-grid">
-        <a href="Search.html" class="nav-card">
-            <span class="icon">🔍</span>
-        </a>
-
-        <a href="Twitter-Search.html" class="nav-card">
-            <span class="icon">𝕏</span>
-        </a>
+    <h1>🛠️ 我的工具箱</h1>
+    
+    <div class="nav-grid" id="navGrid">
+        <div class="loading">正在連線至試算表載入選單...</div>
     </div>
 
     <footer>
-        <p>最後更新於 2026</p>
+        <div class="footer">© 2026 02 02</div>
     </footer>
 </div>
+
+<script>
+    // 1. 設定你的試算表 ID
+    const spreadsheetId = "1derDn2oXg3-NbMNoVtLwvye466dophZVOgrDID-rlbg";
+    // 2. 設定專門存放「選單清單」的工作表名稱（例如叫 Index）
+    const indexSheetName = "Index"; 
+
+    async function loadNav() {
+        const navGrid = document.getElementById('navGrid');
+        const sheetURL = `https://docs.google.com/spreadsheets/d/${spreadsheetId}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(indexSheetName)}`;
+
+        try {
+            const res = await fetch(sheetURL);
+            const text = await res.text();
+            
+            // 解析 CSV，每一行代表一個網頁按鈕
+            // 建議試算表格式：第一欄放顯示名稱(如: 搜尋工具)，第二欄放檔名(如: Search)
+            const lines = text.split('\n')
+                              .map(l => l.trim().replace(/"/g, ''))
+                              .filter(Boolean);
+
+            navGrid.innerHTML = ''; // 清除 loading
+
+            lines.forEach(line => {
+                const parts = line.split(',');
+                const displayName = parts[0]; // 顯示在按鈕上的文字
+                const fileName = parts[1] || parts[0]; // 對應的 HTML 檔名，沒填就用第一個
+                const icon = parts[2] || "🔗"; // 第三欄放圖標，沒填就用連結圖示
+
+                const a = document.createElement('a');
+                a.href = `${fileName}.html`;
+                a.className = 'nav-card';
+                a.innerHTML = `
+                    <div class="name-tag">
+                        <span class="icon">${icon}</span>
+                        <span>${displayName}</span>
+                        <span class="file-name">(${fileName}.html)</span>
+                    </div>
+                    <span>➜</span>
+                `;
+                navGrid.appendChild(a);
+            });
+
+        } catch (e) {
+            console.error(e);
+            navGrid.innerHTML = '<div style="color:red;">載入清單失敗，請檢查工作表 [Index] 是否存在且已開啟共用。</div>';
+        }
+    }
+
+    loadNav();
+</script>
 
 </body>
 </html>

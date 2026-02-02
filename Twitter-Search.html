@@ -1,57 +1,333 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Twitter-Search</title>
-<link rel="stylesheet" href="css/style.css">
-<link rel="icon" href="favicon.ico" type="image/x-icon">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>𝕏-Search-Compiler</title>
+    <style>
+        /* 基礎風格：延續白底簡約風 */
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background: #f0f2f5;
+            color: #333;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        h1 { color: #1c1e21; margin-bottom: 10px; }
+
+        /* 使用說明區塊 */
+        .instruction {
+            background: #fff;
+            max-width: 900px;
+            width: 100%;
+            padding: 15px 25px;
+            border-radius: 12px;
+            border: 1px solid #ddd;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        .instruction h2 { font-size: 16px; margin-top: 0; color: #1da1f2; }
+        .instruction ul { margin: 0; padding-left: 20px; font-size: 13px; color: #555; line-height: 1.6; }
+
+        /* 表格樣式優化 */
+        #searchTable {
+            background: #fff;
+            border-collapse: collapse;
+            width: 100%;
+            max-width: 900px;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            border: 1px solid #ddd;
+            font-size: 13px;
+        }
+
+        #searchTable thead {
+            background: #f8f9fa;
+            border-bottom: 2px solid #eee;
+        }
+
+        #searchTable th, #searchTable td {
+            padding: 10px 8px;
+            text-align: center;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        #searchTable td:nth-child(2) {
+            text-align: left;
+            font-weight: 500;
+            color: #111;
+        }
+
+        /* 按鈕組樣式 */
+        .btn-group {
+            display: inline-flex;
+            gap: 2px;
+            background: #eee;
+            padding: 2px;
+            border-radius: 6px;
+        }
+
+        .btn-group button {
+            border: none;
+            background: transparent;
+            padding: 4px 8px;
+            font-size: 11px;
+            cursor: pointer;
+            border-radius: 4px;
+            color: #666;
+            transition: 0.2s;
+        }
+
+        .btn-group button.selected {
+            background: #212529;
+            color: #fff;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        #openSelected, .link-btn {
+            background: #1da1f2;
+            color: white;
+            border: none;
+            padding: 6px 10px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: 0.2s;
+        }
+
+        #openSelected:hover, .link-btn:hover { background: #1991db; }
+        #openSelected { font-size: 16px; padding: 5px 15px; }
+
+        input[type="checkbox"] { transform: scale(1.2); cursor: pointer; }
+
+        @media (max-width: 600px) {
+            body { padding: 10px; }
+            #searchTable { font-size: 11px; }
+            .btn-group button { padding: 3px 5px; font-size: 10px; }
+        }
+    </style>
 </head>
 <body>
-<h1>𝕏-Search</h1>
-<h2>📌 使用說明：
-<ul>
-  <li>在 
-    <a href="https://docs.google.com/spreadsheets/d/1derDn2oXg3-NbMNoVtLwvye466dophZVOgrDID-rlbg/edit?gid=1669167343#gid=1669167343">Google Sheet</a>
-     第一欄貼上關鍵字，每列一個，包含運算子。</li>
-  <li>打開網頁即可自動讀取 Sheet，生成表格列表。</li>
-  <li>表格可勾選核取框、設定愛心數、日期範圍和排序，每列有 🔗 單列搜尋按鈕。</li>
-  <li>點擊 🔗 搜尋單列，或勾選多列後點擊 🌐 開啟已選搜尋，生成對應 Twitter/X 搜尋連結。</li>
-</ul>
-</h2>
-<table id="searchTable">
-  <thead>
-    <tr>
-      <th><input type="checkbox" id="selectAllCheckbox" checked></th>
-      <th>🔍</th>
-      <th>
-        <div class="btn-group" id="favesHeader">
-          <button data-val="any">❤️</button>
-          <button data-val="10" >❤️10</button>
-          <button data-val="100">❤️100</button>
-        </div>
-      </th>
-      <th>
-        <div class="btn-group" id="daysHeader">
-          <button data-val="any">📅</button>
-          <button data-val="1">📅1</button>
-          <button data-val="7" >📅7</button>
-          <button data-val="30">📅30</button>
-        </div>
-      </th>
-      <th>
-        <div class="btn-group" id="sortHeader">
-          <button data-val="live" >✨live</button>
-          <button data-val="top">🔥top</button>
-        </div>
-      </th>
-      <th><button id="openSelected">🌐</button></th>
-    </tr>
-  </thead>
-  <tbody></tbody>
-</table>
 
-<script src="js/Twitter-Search.js" defer></script>
+    <h1 id="pageTitle">𝕏-Search</h1>
 
+    <div class="instruction">
+        <h2 id="sheetInfo">📌 正在讀取資料...</h2>
+        <ul>
+            <li>表格支援設定愛心數、日期範圍和排序。</li>
+            <li>點擊 🔗 搜尋單列，或點擊標頭的 🌐 開啟所有已勾選的搜尋。</li>
+            <li><b>注意：</b>工作表名稱必須與 HTML 檔名一致。</li>
+        </ul>
+    </div>
+
+    <table id="searchTable">
+        <thead>
+            <tr>
+                <th><input type="checkbox" id="selectAllCheckbox" checked></th>
+                <th>關鍵字 🔍</th>
+                <th>
+                    <div class="btn-group" id="favesHeader">
+                        <button data-val="any">❤️</button>
+                        <button data-val="10" class="selected">10</button>
+                        <button data-val="100">100</button>
+                    </div>
+                </th>
+                <th>
+                    <div class="btn-group" id="daysHeader">
+                        <button data-val="any">📅</button>
+                        <button data-val="1">1</button>
+                        <button data-val="7" class="selected">7</button>
+                        <button data-val="30">30</button>
+                    </div>
+                </th>
+                <th>
+                    <div class="btn-group" id="sortHeader">
+                        <button data-val="live" class="selected">✨live</button>
+                        <button data-val="top">🔥top</button>
+                    </div>
+                </th>
+                <th><button id="openSelected">🌐</button></th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr><td colspan="6">資料載入中...</td></tr>
+        </tbody>
+    </table>
+
+    <script>
+        // 固定試算表 ID
+        const spreadsheetId = "1derDn2oXg3-NbMNoVtLwvye466dophZVOgrDID-rlbg";
+
+        document.addEventListener("DOMContentLoaded", async () => {
+            const tbody = document.querySelector("#searchTable tbody");
+            const selectAllCheckbox = document.getElementById("selectAllCheckbox");
+
+            // 1. 自動獲取檔名
+            const path = window.location.pathname;
+            let pageName = path.split("/").pop().split(".")[0] ;
+            
+            // 更新介面文字
+            document.getElementById('sheetInfo').textContent = `📌 資料來源：工作表 [${pageName}]`;
+
+            // 2. 組合 API 連結
+            const sheetURL = `https://docs.google.com/spreadsheets/d/${spreadsheetId}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(pageName)}`;
+
+            // 建立按鈕組
+            function createBtnGroup(arr, defaultVal, symbol = "") {
+                const td = document.createElement("td");
+                const group = document.createElement("div");
+                group.className = "btn-group";
+                group.dataset.value = defaultVal;
+
+                arr.forEach(val => {
+                    const btn = document.createElement("button");
+                    if (Array.isArray(val)) {
+                        btn.textContent = val[1] + val[0];
+                        btn.dataset.val = val[0];
+                    } else {
+                        btn.textContent = (val === "any" ? symbol : val);
+                        btn.dataset.val = val;
+                    }
+
+                    if ((Array.isArray(val) && val[0] === defaultVal) || val === defaultVal) {
+                        btn.classList.add("selected");
+                    }
+
+                    btn.addEventListener("click", () => {
+                        group.querySelectorAll("button").forEach(b => b.classList.remove("selected"));
+                        btn.classList.add("selected");
+                        group.dataset.value = btn.dataset.val;
+                    });
+                    group.appendChild(btn);
+                });
+
+                td.appendChild(group);
+                return td;
+            }
+
+            try {
+                // 3. 讀取與解析 CSV
+                const res = await fetch(sheetURL);
+                if (!res.ok) throw new Error("權限不足或工作表不存在");
+                const data = await res.text();
+                
+                const lines = data.split('\n')
+                    .map(l => l.trim().replace(/^"|"$/g, '')) // 移除雙引號
+                    .filter(l => l && !l.startsWith('<!DOCTYPE')); // 排除空行與錯誤網頁
+
+                tbody.innerHTML = ""; // 清除載入中文字
+
+                lines.forEach(line => {
+                    // 支援多關鍵字合併 (例如 A,B,C 變成 (A OR B OR C))
+                    const names = line.split(',').map(n => n.trim()).filter(Boolean);
+                    if (names.length === 0) return;
+                    
+                    const keywordQuery = names.length > 1 ? `(${names.join(' OR ')})` : names[0];
+                    
+                    const tr = document.createElement("tr");
+
+                    // 1. 核取框
+                    const tdCheck = document.createElement("td");
+                    const checkbox = document.createElement("input");
+                    checkbox.type = "checkbox";
+                    checkbox.checked = true;
+                    tdCheck.appendChild(checkbox);
+                    tr.appendChild(tdCheck);
+
+                    // 2. 關鍵字顯示
+                    const tdKeyword = document.createElement("td");
+                    tdKeyword.textContent = names.join(' / ');
+                    tr.appendChild(tdKeyword);
+
+                    // 3. 愛心 (預設同步標頭)
+                    tr.appendChild(createBtnGroup(["any", 10, 100], "10", "❤️"));
+
+                    // 4. 日期 (預設同步標頭)
+                    tr.appendChild(createBtnGroup(["any", 1, 7, 30], "7", "📅"));
+
+                    // 5. 排序
+                    tr.appendChild(createBtnGroup([["live", "✨"], ["top", "🔥"]], "live"));
+
+                    // 6. 單列搜尋按鈕
+                    const tdLink = document.createElement("td");
+                    const linkBtn = document.createElement("button");
+                    linkBtn.className = "link-btn";
+                    linkBtn.textContent = "🔗";
+
+                    const openSearch = () => {
+                        const faves = tr.cells[2].querySelector(".btn-group").dataset.value;
+                        const days = tr.cells[3].querySelector(".btn-group").dataset.value;
+                        const sort = tr.cells[4].querySelector(".btn-group").dataset.value;
+                        
+                        let query = keywordQuery;
+                        if (faves !== "any") query += " min_faves:" + faves;
+                        
+                        if (days !== "any") {
+                            const date = new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+                            query += ` since:${date}`;
+                        }
+                        
+                        let url = `https://x.com/search?q=${encodeURIComponent(query)}&f=${sort}`;
+                        window.open(url, "_blank");
+                    };
+
+                    linkBtn.addEventListener("click", openSearch);
+                    tdLink.appendChild(linkBtn);
+                    tr.appendChild(tdLink);
+
+                    tbody.appendChild(tr);
+                });
+            } catch (err) {
+                console.error(err);
+                tbody.innerHTML = `<tr><td colspan="6" style="color:red;">❌ 讀取失敗：請檢查試算表共用權限與工作表名稱是否為 [${pageName}]</td></tr>`;
+            }
+
+            // 全選邏輯
+            selectAllCheckbox.addEventListener("change", () => {
+                const checked = selectAllCheckbox.checked;
+                document.querySelectorAll("#searchTable tbody tr input[type=checkbox]").forEach(cb => cb.checked = checked);
+            });
+
+            // 表頭統一控制欄位
+            function setupHeaderControl(headerId, colIndex) {
+                const header = document.getElementById(headerId);
+                header.querySelectorAll("button").forEach(btn => {
+                    btn.addEventListener("click", () => {
+                        header.querySelectorAll("button").forEach(b => b.classList.remove("selected"));
+                        btn.classList.add("selected");
+                        const val = btn.dataset.val;
+                        document.querySelectorAll(`#searchTable tbody tr`).forEach(tr => {
+                            const g = tr.cells[colIndex].querySelector(".btn-group");
+                            g.dataset.value = val;
+                            g.querySelectorAll("button").forEach(b => {
+                                b.classList.toggle("selected", b.dataset.val === val);
+                            });
+                        });
+                    });
+                });
+            }
+            setupHeaderControl("favesHeader", 2);
+            setupHeaderControl("daysHeader", 3);
+            setupHeaderControl("sortHeader", 4);
+
+            // 🌐 開啟所有選中
+            document.getElementById("openSelected").addEventListener("click", () => {
+                const selectedRows = [...document.querySelectorAll("#searchTable tbody tr")].filter(tr => tr.querySelector("input[type=checkbox]").checked);
+                if (selectedRows.length > 5) {
+                    if (!confirm(`即將開啟 ${selectedRows.length} 個分頁，確定嗎？`)) return;
+                }
+                selectedRows.forEach((tr, i) => {
+                    setTimeout(() => {
+                        tr.querySelector(".link-btn").click();
+                    }, i * 500); // 增加間隔避免瀏覽器阻擋
+                });
+            });
+        });
+    </script>
 </body>
 </html>

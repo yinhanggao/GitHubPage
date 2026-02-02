@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>𝕏-Compiler</title>
+    <style>
+        :root { --x-blue: #1da1f2; --bg: #f0f2f5; }
+        body { font-family: -apple-system, sans-serif; background: var(--bg); margin: 0; padding: 20px; color: #333; display: flex; justify-content: center; }
+        .main-container { width: 100%; max-width: 1000px; display: grid; grid-template-columns: 350px 1fr; gap: 20px; }
+
+        /* 左側清單 */
+        .idol-list-card { background: #fff; border-radius: 12px; border: 1px solid #ddd; display: flex; flex-direction: column; height: 85vh; overflow: hidden; }
+        .card-header { padding: 15px; border-bottom: 1px solid #eee; font-weight: bold; background: #fafafa; }
+        #idolContainer { overflow-y: auto; flex: 1; padding: 10px; }
+        
+        .idol-item { 
+            padding: 12px 15px; margin-bottom: 8px; border-radius: 8px; cursor: pointer; 
+            border: 1px solid #eee; background: #fff; transition: 0.2s;
+        }
+        .idol-item:hover { background: #f0f7ff; border-color: var(--x-blue); }
+        .idol-item.active { background: var(--x-blue); color: #fff; border-color: var(--x-blue); box-shadow: 0 4px 10px rgba(29,161,242,0.2); }
+        
+        .idol-names { font-size: 11px; opacity: 0.8; margin-top: 4px; display: block; }
+        .idol-item.active .idol-names { color: #eee; }
+
+        /* 右側面板 */
+        .control-panel { display: flex; flex-direction: column; gap: 15px; }
+        .panel-card { background: #fff; padding: 20px; border-radius: 12px; border: 1px solid #ddd; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+        .section-title { font-size: 14px; font-weight: bold; color: #666; margin-bottom: 12px; }
+
+        .btn-group { display: flex; flex-wrap: wrap; gap: 8px; }
+        .op-btn { padding: 8px 14px; border-radius: 6px; border: 1px solid #ddd; background: #fff; cursor: pointer; font-size: 13px; }
+        .op-btn.active { background: #212529; color: #fff; border-color: #212529; }
+
+        .preview-box { 
+            background: #f8f9fa; padding: 15px; border-radius: 8px; border: 1px dashed #ccc; 
+            font-family: monospace; font-size: 13px; min-height: 40px; word-break: break-all; margin-top: 10px;
+        }
+        .search-btn { 
+            width: 100%; padding: 15px; background: var(--x-blue); color: #fff; border: none; 
+            border-radius: 8px; font-size: 18px; font-weight: bold; cursor: pointer; margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="main-container">
+    <div class="idol-list-card">
+        <div id="listHeader" class="card-header">🌟 Idol</div>
+        <div id="idolContainer">Loading...</div>
+    </div>
+
+    <div class="control-panel">
+        <div class="panel-card">
+            <div class="btn-group" id="logicGroup">
+                <button class="op-btn active" data-val="AND">AND</button>
+                <button class="op-btn" data-val="OR">OR</button>
+            </div>
+        </div>
+
+        <div class="panel-card">
+            <div class="section-title">❤️</div>
+            <div class="btn-group" id="faveGroup">
+                <button class="op-btn" data-val="">All</button>
+                <button class="op-btn active" data-val="10">10+</button>
+                <button class="op-btn" data-val="100">100+</button>
+            </div>
+            <div class="section-title" style="margin-top:15px;">📅</div>
+            <div class="btn-group" id="dateGroup">
+                <button class="op-btn" data-val="1">1D</button>
+                <button class="op-btn active" data-val="7">7D</button>
+                <button class="op-btn" data-val="30">30D</button>
+            </div>
+        </div>
+
+        <div class="panel-card">
+            <div class="section-title">🖼️</div>
+            <div class="btn-group" id="filterGroup">
+                <button class="op-btn" data-val="filter:images">Img</button>
+                <button class="op-btn" data-val="filter:videos">Video</button>
+                <button class="op-btn" data-val="-filter:links">No Link</button>
+            </div>
+            <div class="section-title" style="margin-top:15px;">🔥</div>
+            <div class="btn-group" id="sortGroup">
+                <button class="op-btn active" data-val="live">New</button>
+                <button class="op-btn" data-val="top">Hot</button>
+            </div>
+        </div>
+
+        <div class="panel-card">
+            <div id="queryPreview" class="preview-box">請選擇偶像...</div>
+            <button class="search-btn" onclick="executeSearch()">𝕏</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    // 固定文件 ID
+    const spreadsheetId = "1derDn2oXg3-NbMNoVtLwvye466dophZVOgrDID-rlbg";
+    let idolData = []; 
+    let selectedIndices = [];
+
+    async function init() {
+        // 1. 自動獲取當前 HTML 檔名 (例如 Twitter-Search-Compiler)
+        const path = window.location.pathname;
+        const pageName = path.split("/").pop().replace(".html", "") ;
+        
+        // 更新 UI 標題
+
+        // 2. 構建 Google Visualization API URL (指定工作表名稱)
+        const sheetURL = `https://docs.google.com/spreadsheets/d/${spreadsheetId}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(pageName)}`;
+
+        try {
+            const res = await fetch(sheetURL);
+            const text = await res.text();
+            
+            // 3. 解析 CSV (gviz 返回的 CSV 欄位通常會被引號包住，需要清除)
+            const lines = text.split('\n').filter(l => l.trim() !== "");
+            
+            idolData = lines.map(line => {
+                return line.split(',')
+                           .map(name => name.trim().replace(/^"|"$/g, '')) // 只移除頭尾引號
+                           .filter(Boolean);
+            });
+
+            const container = document.getElementById('idolContainer');
+            container.innerHTML = '';
+            
+            idolData.forEach((names, idx) => {
+                const div = document.createElement('div');
+                div.className = 'idol-item';
+                div.innerHTML = `
+                    <strong>${names[0]}</strong>
+                    <span class="idol-names">${names.slice(1).join(' / ')}</span>
+                `;
+                div.onclick = () => toggleIdol(idx, div);
+                container.appendChild(div);
+            });
+        } catch (e) { 
+            console.error("CSV 讀取失敗", e); 
+            document.getElementById('idolContainer').textContent = "讀取失敗，請確認工作表名稱與 HTML 檔名一致且已開啟共用。";
+        }
+    }
+
+    function toggleIdol(idx, el) {
+        if (selectedIndices.includes(idx)) {
+            selectedIndices = selectedIndices.filter(i => i !== idx);
+            el.classList.remove('active');
+        } else {
+            selectedIndices.push(idx);
+            el.classList.add('active');
+        }
+        updatePreview();
+    }
+
+    function updatePreview() {
+        const preview = document.getElementById('queryPreview');
+        if (selectedIndices.length === 0) {
+            preview.textContent = "請選擇偶像...";
+            return;
+        }
+
+        const logic = document.querySelector('#logicGroup .active').dataset.val;
+        const faves = document.querySelector('#faveGroup .active').dataset.val;
+        const days = document.querySelector('#dateGroup .active').dataset.val;
+        const filters = [...document.querySelectorAll('#filterGroup .active')].map(b => b.dataset.val);
+
+        let idolQueries = selectedIndices.map(idx => {
+            const names = idolData[idx];
+            return names.length > 1 ? `(${names.join(' OR ')})` : names[0];
+        });
+
+        let query = idolQueries.join(logic === "OR" ? " OR " : " ");
+
+        if (faves) query += ` min_faves:${faves}`;
+        filters.forEach(f => query += ` ${f}`);
+        if (days) {
+            const date = new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+            query += ` since:${date}`;
+        }
+
+        preview.textContent = query;
+    }
+
+    document.querySelectorAll('.btn-group').forEach(group => {
+        group.addEventListener('click', (e) => {
+            if (e.target.classList.contains('op-btn')) {
+                if (group.id !== 'filterGroup') {
+                    group.querySelectorAll('.op-btn').forEach(b => b.classList.remove('active'));
+                }
+                e.target.classList.toggle('active');
+                updatePreview();
+            }
+        });
+    });
+
+    function executeSearch() {
+        const q = document.getElementById('queryPreview').textContent;
+        const sort = document.querySelector('#sortGroup .active').dataset.val;
+        if (selectedIndices.length === 0) return;
+        window.open(`https://x.com/search?q=${encodeURIComponent(q)}&f=${sort}`, "_blank");
+    }
+
+    init();
+</script>
+</body>
+</html>

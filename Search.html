@@ -3,51 +3,28 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>私人搜尋站</title>
+    <title>Search</title>
     <style>
+        /* 保持你原本的 CSS 樣式不變 */
         body { font-family: -apple-system, sans-serif; margin: 0; padding: 20px 0; background: #f0f2f5; color: #333; font-size: 12px; display: flex; justify-content: center; }
-        
         .main-container { width: 95%; max-width: 450px; display: flex; flex-direction: column; }
-
-        /* 頂部搜尋欄 */
         .header { display: flex; gap: 0; margin-bottom: 15px; position: sticky; top: 0; background: #f0f2f5; padding: 10px 0; z-index: 100; border-bottom: 2px solid #ddd; }
         .search-box { flex: 1; display: flex; }
         input[type="text"] { flex: 1; padding: 10px 14px; border: 1px solid #ccc; border-radius: 6px 0 0 6px; background: #fff; color: #000; outline: none; font-size: 14px; transition: 0.2s; }
         input[type="text"]:focus { border-color: #007bff; box-shadow: inset 0 1px 2px rgba(0,0,0,0.1); }
         button#mainSearch { padding: 10px 24px; cursor: pointer; background: #007bff; color: white; border: none; border-radius: 0 6px 6px 0; font-weight: bold; font-size: 14px; }
         button#mainSearch:hover { background: #0056b3; }
-        
         .btn-toggle { margin-left: 12px; padding: 10px 15px; font-size: 12px; cursor: pointer; background: #fff; color: #555; border: 1px solid #ccc; border-radius: 6px; white-space: nowrap; font-weight: 500; }
         .btn-toggle:hover { background: #f1f1f1; border-color: #bbb; }
-
-        /* 分類列 */
         .tag-row { display: flex; align-items: flex-start; margin-bottom: 8px; padding: 8px 12px; background: #fff; border-radius: 8px; border: 1px solid #e0e0e0; cursor: pointer; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
         .tag-row:hover { border-color: #007bff; background: #fafafa; }
         .tag-label { min-width: 85px; font-weight: bold; color: #007bff; font-size: 11px; flex-shrink: 0; padding-top: 5px; text-transform: uppercase; }
-
         .site-container { display: flex; flex-wrap: wrap; gap: 6px; flex: 1; }
-
-        /* 隱藏原生 Checkbox */
         .site-item input { display: none; }
-
-        /* 網站標籤樣式 (未選中) */
-        .site-item { 
-            display: flex; align-items: center; gap: 6px; padding: 4px 10px; 
-            background: #f1f3f5; border-radius: 10px; cursor: pointer; 
-            border: 1px solid #e9ecef; transition: all 0.15s ease; 
-            user-select: none; color: #495057; font-weight: 500;
-        }
+        .site-item { display: flex; align-items: center; gap: 6px; padding: 4px 10px; background: #f1f3f5; border-radius: 10px; cursor: pointer; border: 1px solid #e9ecef; transition: all 0.15s ease; user-select: none; color: #495057; font-weight: 500; }
         .site-item:hover { background: #e9ecef; }
-
-        /* 網站標籤樣式 (選中後反白) */
-        .site-item.active { 
-            background: #212529; 
-            color: #fff; 
-            border-color: #212529;
-        }
-
+        .site-item.active { background: #212529; color: #fff; border-color: #212529; }
         .site-icon { width: 14px; height: 14px; object-fit: contain; background: #fff; padding: 1px; border-radius: 50%; flex-shrink: 0; border: 1px solid #eee; }
-        
         .footer { font-size: 11px; color: #888; text-align: center; margin-top: 20px; }
     </style>
 </head>
@@ -63,39 +40,68 @@
         </div>
 
         <div id="content"></div>
-        <div class="footer">© 2025 huh Demo</div>
     </div>
 
     <script>
-        const CSV_PATH = 'assets/searchweb.csv';
+        // 1. 設定試算表 ID 與工作表名稱
+        const spreadsheetId = "1derDn2oXg3-NbMNoVtLwvye466dophZVOgrDID-rlbg";
+        const pageName = "Search"; // 你的工作表名稱
+
         let siteData = [];
 
         function getIcon(url) {
-            return `https://www.google.com/s2/favicons?sz=64&domain=${new URL(url).hostname}`;
+            try {
+                return `https://www.google.com/s2/favicons?sz=64&domain=${new URL(url).hostname}`;
+            } catch (e) {
+                return "🔗";
+            }
         }
 
         async function init() {
-            try {
-                const res = await fetch(CSV_PATH);
-                const text = await res.text();
-                const rows = text.split('\n').filter(l => l.trim() !== "").slice(1);
-                const prefs = JSON.parse(localStorage.getItem('searchPrefs') || '{}');
+            // 2. 組合 Google Sheets API URL
+            const sheetURL = `https://docs.google.com/spreadsheets/d/${spreadsheetId}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(pageName)}`;
 
+            try {
+                const res = await fetch(sheetURL);
+                const text = await res.text();
+                
+                // 3. 解析 CSV (支援 \r\n 換行並移除雙引號)
+                const rows = text.split(/\r?\n/)
+                                 .map(row => row.trim().replace(/^"|"$/g, ''))
+                                 .filter(l => l !== "");
+
+                const prefs = JSON.parse(localStorage.getItem('searchPrefs') || '{}');
                 const groups = {};
+
                 rows.forEach((row, i) => {
-                    const cols = row.split(',');
+                    // 解析每一列，移除 Google CSV 自動加上的雙引號
+                    const cols = row.split(',').map(c => c.trim().replace(/^"|"$/g, ''));
+                    
                     if (cols.length < 3) return;
-                    const site = { id: i, name: cols[0].trim(), url: cols[1].trim(), tag: cols[2].trim() };
+                    
+                    const site = { 
+                        id: i, 
+                        name: cols[0], // A 欄：網站名稱
+                        url: cols[1],  // B 欄：搜尋網址 (含 KEYWORD)
+                        tag: cols[2]   // C 欄：分類標籤
+                    };
+                    
                     siteData.push(site);
                     if (!groups[site.tag]) groups[site.tag] = [];
                     groups[site.tag].push(site);
                 });
+                
                 render(groups, prefs);
-            } catch (err) { console.error("初始化失敗:", err); }
+            } catch (err) { 
+                console.error("初始化失敗:", err); 
+                document.getElementById('content').innerHTML = `<div style="text-align:center; padding:20px; color:red;">讀取失敗，請檢查試算表共用權限或工作表名稱 [${pageName}]</div>`;
+            }
         }
 
         function render(groups, prefs) {
             const container = document.getElementById('content');
+            container.innerHTML = ""; // 清空內容
+
             for (const [tag, sites] of Object.entries(groups)) {
                 const row = document.createElement('div');
                 row.className = 'tag-row';
@@ -111,6 +117,7 @@
 
                 const grid = document.getElementById(`g-${tag}`);
                 sites.forEach(s => {
+                    // 預設選中 (除非 localStorage 紀錄為 false)
                     const checked = prefs[s.name] !== false;
                     const label = document.createElement('label');
                     label.className = `site-item ${checked ? 'active' : ''}`;
@@ -129,6 +136,7 @@
                         label.classList.toggle('active', cb.checked);
                         save();
                         e.stopPropagation();
+                        e.preventDefault(); // 修正 label 點擊兩次的問題
                     };
 
                     grid.appendChild(label);
@@ -170,11 +178,17 @@
             const input = document.getElementById('searchInput');
             const kw = input.value.trim();
             if (!kw) return;
-            const sel = Array.from(document.querySelectorAll('.site-item input:checked')).map(c => siteData[c.value]);
+            
+            const checkedBoxes = document.querySelectorAll('.site-item input:checked');
+            const sel = Array.from(checkedBoxes).map(c => siteData[c.value]);
+            
+            if (sel.length > 5 && !confirm(`即將開啟 ${sel.length} 個分頁，確定嗎？`)) return;
+
             input.value = '';
             for (let i = 0; i < sel.length; i++) {
                 window.open(sel[i].url.replace('KEYWORD', encodeURIComponent(kw)), '_blank');
-                if (i < sel.length - 1) await new Promise(r => setTimeout(r, 800));
+                // 延遲一點時間防止被瀏覽器視為廣告彈窗阻擋
+                if (i < sel.length - 1) await new Promise(r => setTimeout(r, 600));
             }
         }
 
