@@ -195,11 +195,36 @@
         });
     });
 
-    function executeSearch() {
-        const q = document.getElementById('queryPreview').textContent;
-        const sort = document.querySelector('#sortGroup .active').dataset.val;
+function executeSearch() {
         if (selectedIndices.length === 0) return;
-        window.open(`https://x.com/search?q=${encodeURIComponent(q)}&f=${sort}`, "_blank");
+
+        // 1. 取得完整指令 (用於跳轉)
+        const fullQuery = document.getElementById('queryPreview').textContent;
+        const sort = document.querySelector('#sortGroup .active').dataset.val;
+
+        // 2. 取得「不含時間」的指令 (用於複製)
+        const logic = document.querySelector('#logicGroup .active').dataset.val;
+        const faves = document.querySelector('#faveGroup .active').dataset.val;
+        const filters = [...document.querySelectorAll('#filterGroup .active')].map(b => b.dataset.val);
+
+        let idolQueries = selectedIndices.map(idx => {
+            const names = idolData[idx];
+            return names.length > 1 ? `(${names.join(' OR ')})` : names[0];
+        });
+
+        let copyQuery = idolQueries.join(logic === "OR" ? " OR " : " ");
+        if (faves) copyQuery += ` min_faves:${faves}`;
+        filters.forEach(f => copyQuery += ` ${f}`);
+
+        // 3. 執行複製動作
+        navigator.clipboard.writeText(copyQuery).then(() => {
+            console.log("已複製純指令:", copyQuery);
+        }).catch(err => {
+            console.error("複製失敗", err);
+        });
+
+        // 4. 開啟 𝕏 搜尋頁面
+        window.open(`https://x.com/search?q=${encodeURIComponent(fullQuery)}&f=${sort}`, "_blank");
     }
 
     init();
