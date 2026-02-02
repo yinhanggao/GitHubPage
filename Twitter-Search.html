@@ -4,29 +4,31 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>𝕏-Search</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🔍</text></svg>">
     <style>
         body { font-family: -apple-system, sans-serif; margin: 0; padding: 20px 0; background: #f0f2f5; color: #333; display: flex; justify-content: center; }
         .main-container { width: 95%; max-width: 450px; display: flex; flex-direction: column; }
 
         /* 頂部控制欄 */
-        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; position: sticky; top: 0; background: #f0f2f5; padding: 10px 0; z-index: 100; border-bottom: 2px solid #ddd; }
-        h1 { font-size: 18px; margin: 0; color: #1c1e21; }
+        .header { position: sticky; top: 0; background: #f0f2f5; padding: 10px 0; z-index: 100; border-bottom: 2px solid #ddd; margin-bottom: 15px; }
+        .top-row { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
         
+        /* 時間篩選按鈕列 (取代標題位置) */
+        .time-group { display: flex; gap: 8px; flex: 1; }
+        .btn-time { flex: 1; padding: 8px 5px; font-size: 13px; border-radius: 6px; border: 1px solid #ccc; background: #fff; cursor: pointer; transition: 0.2s; font-weight: bold; }
+        .btn-time.active { background: #000; color: #fff; border-color: #000; }
+
         .button-group { display: flex; gap: 8px; }
-        .btn { padding: 8px 15px; font-size: 13px; cursor: pointer; border-radius: 6px; font-weight: bold; border: 1px solid #ccc; transition: 0.2s; }
+        .btn { padding: 8px 12px; font-size: 13px; cursor: pointer; border-radius: 6px; font-weight: bold; border: 1px solid #ccc; transition: 0.2s; }
         
-        .btn-primary { background: #1da1f2; color: white; border: none; }
+        .btn-primary { background: #63bdf5; color: white; border: none; }
         .btn-primary:hover { background: #1991db; }
         .btn-outline { background: #fff; color: #555; }
         .btn-outline:hover { background: #f1f1f1; }
 
         /* 列表樣式 */
         .site-container { display: flex; flex-wrap: wrap; gap: 8px; padding: 10px 0; }
-        
-        /* 隱藏 Checkbox */
         .search-item input { display: none; }
-
-        /* 標籤樣式 (未選中) */
         .search-item { 
             display: flex; align-items: center; padding: 8px 16px; 
             background: #fff; border-radius: 10px; cursor: pointer; 
@@ -34,26 +36,27 @@
             user-select: none; color: #4b4f56; font-weight: 500; font-size: 14px;
             box-shadow: 0 1px 2px rgba(0,0,0,0.05);
         }
-
-        /* 標籤樣式 (選中反白) */
         .search-item.active { 
-            background: #1da1f2; 
-            color: #fff; 
-            border-color: #1da1f2;
+            background: #9dd2f3; color: #fff; border-color: #9dd2f3;
             box-shadow: 0 2px 8px rgba(29,161,242,0.3);
         }
-
-        .footer { font-size: 11px; color: #888; text-align: center; margin-top: 30px; }
     </style>
 </head>
 <body>
 
     <div class="main-container">
         <div class="header">
-            <h1>𝕏</h1>
-            <div class="button-group">
-                <button class="btn btn-outline" onclick="toggleAll()">全選/清空</button>
-                <button class="btn btn-primary" onclick="startMultiSearch()">開啟選取</button>
+            <div class="top-row">
+                <div class="time-group">
+                    <button class="btn-time" onclick="setTime(1, this)">1D</button>
+                    <button class="btn-time active" onclick="setTime(7, this)">7D</button>
+                    <button class="btn-time" onclick="setTime(30, this)">30D</button>
+                </div>
+                
+                <div class="button-group">
+                    <button class="btn btn-outline" onclick="toggleAll()">全選/清空</button>
+                    <button class="btn btn-primary" onclick="startMultiSearch()">開啟選取</button>
+                </div>
             </div>
         </div>
 
@@ -66,18 +69,33 @@
         const spreadsheetId = "1derDn2oXg3-NbMNoVtLwvye466dophZVOgrDID-rlbg";
         const sheetName = "Twitter-Search"; 
         let searchData = [];
+        let selectedDays = 1; // 預設 1 天
+
+        function getSinceDate(days) {
+            if (days === null) return ""; 
+            const d = new Date();
+            d.setDate(d.getDate() - days);
+            return d.toISOString().split('T')[0];
+        }
+
+        // 切換時間設定，若點擊已選中的按鈕則取消選取（不限時）
+        function setTime(days, btn) {
+            if (selectedDays === days) {
+                selectedDays = null;
+                btn.classList.remove('active');
+            } else {
+                selectedDays = days;
+                document.querySelectorAll('.btn-time').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+            }
+        }
 
         async function init() {
             const url = `https://docs.google.com/spreadsheets/d/${spreadsheetId}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(sheetName)}`;
-
             try {
                 const res = await fetch(url);
                 const text = await res.text();
-                
-                // 解析 CSV 並過濾引號
-                const rows = text.split(/\r?\n/)
-                                 .map(row => row.trim().replace(/^"|"$/g, ''))
-                                 .filter(l => l !== "");
+                const rows = text.split(/\r?\n/).map(row => row.trim().replace(/^"|"$/g, '')).filter(Boolean);
 
                 const container = document.getElementById('content');
                 container.innerHTML = "";
@@ -86,35 +104,26 @@
                     const cols = row.split(',').map(c => c.trim().replace(/^"|"$/g, ''));
                     if (cols.length < 1) return;
 
-                    const title = cols[0]; // 只取第一欄顯示
-                    const query = cols[1] || cols[0]; // 第二欄是搜尋指令
-                    
-                    const item = { id: i, title, query };
-                    searchData.push(item);
+                    const title = cols[0];
+                    const query = cols[1] || cols[0];
+                    searchData.push({ id: i, title, query });
 
                     const label = document.createElement('label');
-                    label.className = 'search-item active'; // 預設為選中狀態
-                    label.innerHTML = `
-                        <input type="checkbox" value="${i}" checked>
-                        <span>${title}</span>
-                    `;
-
+                    label.className = 'search-item active';
+                    label.innerHTML = `<input type="checkbox" value="${i}" checked><span>${title}</span>`;
                     label.onclick = (e) => {
                         const cb = label.querySelector('input');
                         cb.checked = !cb.checked;
                         label.classList.toggle('active', cb.checked);
                         e.preventDefault(); 
                     };
-
                     container.appendChild(label);
                 });
             } catch (err) {
-                console.error(err);
-                document.getElementById('content').innerHTML = "載入失敗，請檢查網路或試算表分頁名稱。";
+                document.getElementById('content').innerHTML = "載入失敗";
             }
         }
 
-        // 全選或全部取消
         function toggleAll() {
             const items = document.querySelectorAll('.search-item');
             const someUnchecked = Array.from(items).some(item => !item.querySelector('input').checked);
@@ -125,27 +134,21 @@
             });
         }
 
-        // 執行搜尋 (含延遲機制)
         async function startMultiSearch() {
-            const selectedIdx = Array.from(document.querySelectorAll('.search-item input:checked'))
-                                     .map(cb => cb.value);
-            
-            if (selectedIdx.length === 0) {
-                alert("請先選取要搜尋的項目");
-                return;
-            }
-
+            const selectedIdx = Array.from(document.querySelectorAll('.search-item input:checked')).map(cb => cb.value);
+            if (selectedIdx.length === 0) return alert("請先選取項目");
             if (selectedIdx.length > 5 && !confirm(`即將開啟 ${selectedIdx.length} 個分頁，確定嗎？`)) return;
+
+            const sinceDate = getSinceDate(selectedDays);
+            const timeFilter = sinceDate ? ` since:${sinceDate}` : "";
 
             for (let i = 0; i < selectedIdx.length; i++) {
                 const data = searchData[selectedIdx[i]];
-                const url = `https://x.com/search?q=${encodeURIComponent(data.query)}&f=live`;
+                const finalQuery = data.query + timeFilter;
+                const url = `https://x.com/search?q=${encodeURIComponent(finalQuery)}&f=live`;
                 window.open(url, '_blank');
 
-                // 延遲 800 毫秒，避免被瀏覽器攔截彈窗
-                if (i < selectedIdx.length - 1) {
-                    await new Promise(r => setTimeout(r, 800));
-                }
+                if (i < selectedIdx.length - 1) await new Promise(r => setTimeout(r, 800));
             }
         }
 
