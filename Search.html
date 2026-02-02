@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Search</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🔍</text></svg>">
     <style>
         /* 保持你原本的 CSS 樣式不變 */
         body { font-family: -apple-system, sans-serif; margin: 0; padding: 20px 0; background: #f0f2f5; color: #333; font-size: 12px; display: flex; justify-content: center; }
@@ -110,7 +111,7 @@
                 };
 
                 row.innerHTML = `
-                    <div class="tag-label"># ${tag}</div>
+                    <div class="tag-label">🏷️ ${tag}</div>
                     <div class="site-container" id="g-${tag}"></div>
                 `;
                 container.appendChild(row);
