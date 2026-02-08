@@ -8,7 +8,6 @@
     <link rel="icon"
         href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🔍</text></svg>" />
     <style>
-        /* 樣式微調：提升質感與手機端操作性 */
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             margin: 0;
@@ -62,7 +61,7 @@
         button#mainSearch {
             padding: 0 20px;
             cursor: pointer;
-            background: #007bff;
+            background: #6c757d;
             color: white;
             border: none;
             border-radius: 0 8px 8px 0;
@@ -132,6 +131,7 @@
 
         .site-item:hover {
             background: #e9ecef;
+            border-color: #adb5bd;
         }
 
         .site-item.active {
@@ -169,38 +169,32 @@
         const searchInput = document.getElementById('searchInput')
         const mainBtn = document.getElementById('mainSearch')
 
-        // 1. 監聽輸入框內容變化，動態切換按鈕狀態
         searchInput.addEventListener('input', () => {
             if (searchInput.value.trim() === '') {
                 mainBtn.innerText = '貼上'
-                mainBtn.style.background = '#6c757d' // 貼上時用灰色，區隔功能
+                mainBtn.style.background = '#6c757d'
             } else {
                 mainBtn.innerText = '搜尋'
-                mainBtn.style.background = '#007bff' // 搜尋時回復藍色
+                mainBtn.style.background = '#007bff'
             }
         })
 
-        // 2. 統一處理按鈕點擊事件
         mainBtn.onclick = async () => {
             if (searchInput.value.trim() === '') {
-                // 執行貼上功能
                 try {
                     const text = await navigator.clipboard.readText()
                     if (text) {
                         searchInput.value = text
-                        // 貼上後手動觸發 input 事件來切換按鈕成「搜尋」
                         searchInput.dispatchEvent(new Event('input'))
                     }
                 } catch (err) {
-                    alert('無法讀取剪貼簿，請檢查瀏覽器權限設定。')
+                    alert('無法讀取剪貼簿，請檢查瀏覽器權限。')
                 }
             } else {
-                // 執行原本的搜尋功能
                 startSearch()
             }
         }
 
-        // 3. 額外優化：點擊輸入框時，如果是空的就自動詢問貼上（選用）
         searchInput.addEventListener('click', async () => {
             if (searchInput.value.trim() === '') {
                 const text = await navigator.clipboard.readText().catch(() => '')
@@ -219,7 +213,6 @@
             }
         }
 
-        // 穩健的 CSV 解析，處理網址內的逗號與引號
         function parseCSV(text) {
             const rows = []
             const lines = text.split(/\r?\n/).filter((l) => l.trim() !== '')
@@ -243,7 +236,16 @@
 
                 rows.forEach((cols, i) => {
                     if (cols.length < 3) return
-                    const site = { id: i, name: cols[0], url: cols[1], tag: cols[2] }
+                    // 讀取 D 欄 (Index 3)
+                    const hUrl = (cols[3] && cols[3].trim().startsWith('http')) ? cols[3].trim() : null
+
+                    const site = {
+                        id: i,
+                        name: cols[0],
+                        url: cols[1],
+                        tag: cols[2],
+                        homeUrl: hUrl
+                    }
                     siteData.push(site)
                     if (!groups[site.tag]) groups[site.tag] = []
                     groups[site.tag].push(site)
@@ -251,7 +253,7 @@
                 render(groups, prefs)
             } catch (err) {
                 document.getElementById('content').innerHTML =
-                    `<div style="color:red; text-align:center;">讀取失敗，請檢查權限設定。</div>`
+                    `<div style="color:red; text-align:center;">讀取失敗，請檢查權限。</div>`
             }
         }
 
@@ -265,7 +267,6 @@
                 row.innerHTML = `
                     <div class="tag-header" onclick="toggleTag('${tag}')">
                         <div class="tag-label">🏷️ ${tag}</div>
-                        <span style="font-size:10px; color:#999;"></span>
                     </div>
                     <div class="site-container" id="g-${tag}"></div>
                 `
@@ -277,14 +278,19 @@
                     const label = document.createElement('label')
                     label.className = `site-item ${checked ? 'active' : ''}`
                     label.dataset.name = s.name
-                    label.dataset.tag = tag
+
+                    // 設定滑鼠懸停提示
+                    if (s.homeUrl) {
+                        label.title = `中鍵點擊開啟首頁: ${s.homeUrl}`
+                    }
+
                     label.innerHTML = `
                         <input type="checkbox" data-id="${s.id}" ${checked ? 'checked' : ''}>
                         <img src="${getIcon(s.url)}" class="site-icon">
                         <span>${s.name}</span>
                     `
 
-                    // 修正點擊事件邏輯
+                    // 左鍵點擊：切換選取
                     label.onclick = (e) => {
                         e.preventDefault()
                         const cb = label.querySelector('input')
@@ -292,6 +298,17 @@
                         label.classList.toggle('active', cb.checked)
                         save()
                     }
+
+                    // 中鍵點擊：開啟 D 欄網址
+                    label.onauxclick = (e) => {
+                        if (e.button === 1) { // 1 = 中鍵
+                            e.preventDefault()
+                            if (s.homeUrl) {
+                                window.open(s.homeUrl, '_blank')
+                            }
+                        }
+                    }
+
                     grid.appendChild(label)
                 })
             }
@@ -341,7 +358,6 @@
                 let finalURL = sel[i].url
                 let searchWord = kw
 
-                // 處理大小寫轉換需求
                 if (finalURL.includes('KEYWORD')) {
                     searchWord = kw.toUpperCase()
                     finalURL = finalURL.replace('KEYWORD', encodeURIComponent(searchWord))
@@ -352,7 +368,6 @@
                     searchWord = kw.charAt(0).toUpperCase() + kw.slice(1)
                     finalURL = finalURL.replace('Keyword', encodeURIComponent(searchWord))
                 } else {
-                    // 如果都沒對到，預設不轉換但執行替換（如果網址內有其他寫法）
                     finalURL = finalURL.replace(/keyword/gi, encodeURIComponent(kw))
                 }
 
@@ -360,6 +375,7 @@
                 if (i < sel.length - 1) await new Promise((r) => setTimeout(r, 600))
             }
             input.value = ''
+            input.dispatchEvent(new Event('input'))
         }
 
         document.getElementById('searchInput').addEventListener('keypress', (e) => {
