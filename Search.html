@@ -1,40 +1,161 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="zh-Hant">
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Search</title>
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🔍</text></svg>">
+    <link rel="icon"
+        href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🔍</text></svg>" />
     <style>
         /* 樣式微調：提升質感與手機端操作性 */
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; margin: 0; padding: 20px 0; background: #f0f2f5; color: #333; font-size: 13px; display: flex; justify-content: center; }
-        .main-container { width: 95%; max-width: 500px; display: flex; flex-direction: column; }
-        .header { display: flex; gap: 0; margin-bottom: 15px; position: sticky; top: 0; background: #f0f2f5; padding: 10px 0; z-index: 100; border-bottom: 2px solid #ddd; }
-        .search-box { flex: 1; display: flex; }
-        input[type="text"] { flex: 1; padding: 12px 14px; border: 1px solid #ccc; border-radius: 8px 0 0 8px; background: #fff; outline: none; font-size: 15px; }
-        input[type="text"]:focus { border-color: #007bff; box-shadow: 0 0 0 2px rgba(0,123,255,0.1); }
-        button#mainSearch { padding: 0 20px; cursor: pointer; background: #007bff; color: white; border: none; border-radius: 0 8px 8px 0; font-weight: bold; font-size: 15px; }
-        .btn-toggle { margin-left: 10px; padding: 0 12px; font-size: 12px; cursor: pointer; background: #fff; border: 1px solid #ccc; border-radius: 8px; white-space: nowrap; }
-        
-        .tag-row { display: flex; flex-direction: column; margin-bottom: 12px; padding: 12px; background: #fff; border-radius: 10px; border: 1px solid #e0e0e0; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
-        .tag-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; cursor: pointer; }
-        .tag-label { font-weight: bold; color: #007bff; font-size: 12px; text-transform: uppercase; }
-        
-        .site-container { display: flex; flex-wrap: wrap; gap: 8px; }
-        .site-item { display: flex; align-items: center; gap: 6px; padding: 6px 12px; background: #f1f3f5; border-radius: 20px; cursor: pointer; border: 1px solid #e9ecef; transition: all 0.2s; user-select: none; }
-        .site-item input { display: none; }
-        .site-item:hover { background: #e9ecef; }
-        .site-item.active { background: #212529; color: #fff; border-color: #212529; }
-        .site-icon { width: 16px; height: 16px; object-fit: contain; border-radius: 3px; background: white; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 20px 0;
+            background: #f0f2f5;
+            color: #333;
+            font-size: 13px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .main-container {
+            width: 95%;
+            max-width: 500px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header {
+            display: flex;
+            gap: 0;
+            margin-bottom: 15px;
+            position: sticky;
+            top: 0;
+            background: #f0f2f5;
+            padding: 10px 0;
+            z-index: 100;
+            border-bottom: 2px solid #ddd;
+        }
+
+        .search-box {
+            flex: 1;
+            display: flex;
+        }
+
+        input[type='text'] {
+            flex: 1;
+            padding: 12px 14px;
+            border: 1px solid #ccc;
+            border-radius: 8px 0 0 8px;
+            background: #fff;
+            outline: none;
+            font-size: 15px;
+        }
+
+        input[type='text']:focus {
+            border-color: #007bff;
+            box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.1);
+        }
+
+        button#mainSearch {
+            padding: 0 20px;
+            cursor: pointer;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 0 8px 8px 0;
+            font-weight: bold;
+            font-size: 15px;
+        }
+
+        .btn-toggle {
+            margin-left: 10px;
+            padding: 0 12px;
+            font-size: 12px;
+            cursor: pointer;
+            background: #fff;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            white-space: nowrap;
+        }
+
+        .tag-row {
+            display: flex;
+            flex-direction: column;
+            margin-bottom: 12px;
+            padding: 12px;
+            background: #fff;
+            border-radius: 10px;
+            border: 1px solid #e0e0e0;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+        }
+
+        .tag-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+            cursor: pointer;
+        }
+
+        .tag-label {
+            font-weight: bold;
+            color: #007bff;
+            font-size: 12px;
+            text-transform: uppercase;
+        }
+
+        .site-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .site-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 12px;
+            background: #f1f3f5;
+            border-radius: 20px;
+            cursor: pointer;
+            border: 1px solid #e9ecef;
+            transition: all 0.2s;
+            user-select: none;
+        }
+
+        .site-item input {
+            display: none;
+        }
+
+        .site-item:hover {
+            background: #e9ecef;
+        }
+
+        .site-item.active {
+            background: #212529;
+            color: #fff;
+            border-color: #212529;
+        }
+
+        .site-icon {
+            width: 16px;
+            height: 16px;
+            object-fit: contain;
+            border-radius: 3px;
+            background: white;
+        }
     </style>
 </head>
-<body>
 
+<body>
     <div class="main-container">
         <div class="header">
             <div class="search-box">
-                <input type="text" id="searchInput" placeholder="輸入關鍵字..." autocomplete="off">
-                <button id="mainSearch" onclick="startSearch()">搜尋</button>
+                <input type="text" id="searchInput" placeholder="輸入或點擊貼上..." autocomplete="off" />
+                <button id="mainSearch">貼上</button>
             </div>
             <button class="btn-toggle" onclick="toggleAllGlobal()">全選/取消</button>
         </div>
@@ -42,162 +163,211 @@
     </div>
 
     <script>
-        const spreadsheetId = "1derDn2oXg3-NbMNoVtLwvye466dophZVOgrDID-rlbg";
-        const pageName = "Search";
-        let siteData = [];
+        const spreadsheetId = '1derDn2oXg3-NbMNoVtLwvye466dophZVOgrDID-rlbg'
+        const pageName = 'Search'
+        let siteData = []
+        const searchInput = document.getElementById('searchInput')
+        const mainBtn = document.getElementById('mainSearch')
+
+        // 1. 監聽輸入框內容變化，動態切換按鈕狀態
+        searchInput.addEventListener('input', () => {
+            if (searchInput.value.trim() === '') {
+                mainBtn.innerText = '貼上'
+                mainBtn.style.background = '#6c757d' // 貼上時用灰色，區隔功能
+            } else {
+                mainBtn.innerText = '搜尋'
+                mainBtn.style.background = '#007bff' // 搜尋時回復藍色
+            }
+        })
+
+        // 2. 統一處理按鈕點擊事件
+        mainBtn.onclick = async () => {
+            if (searchInput.value.trim() === '') {
+                // 執行貼上功能
+                try {
+                    const text = await navigator.clipboard.readText()
+                    if (text) {
+                        searchInput.value = text
+                        // 貼上後手動觸發 input 事件來切換按鈕成「搜尋」
+                        searchInput.dispatchEvent(new Event('input'))
+                    }
+                } catch (err) {
+                    alert('無法讀取剪貼簿，請檢查瀏覽器權限設定。')
+                }
+            } else {
+                // 執行原本的搜尋功能
+                startSearch()
+            }
+        }
+
+        // 3. 額外優化：點擊輸入框時，如果是空的就自動詢問貼上（選用）
+        searchInput.addEventListener('click', async () => {
+            if (searchInput.value.trim() === '') {
+                const text = await navigator.clipboard.readText().catch(() => '')
+                if (text) {
+                    searchInput.value = text
+                    searchInput.dispatchEvent(new Event('input'))
+                }
+            }
+        })
 
         function getIcon(url) {
-            try { return `https://www.google.com/s2/favicons?sz=64&domain=${new URL(url).hostname}`; }
-            catch (e) { return "🔗"; }
+            try {
+                return `https://www.google.com/s2/favicons?sz=64&domain=${new URL(url).hostname}`
+            } catch (e) {
+                return '🔗'
+            }
         }
 
         // 穩健的 CSV 解析，處理網址內的逗號與引號
         function parseCSV(text) {
-            const rows = [];
-            const lines = text.split(/\r?\n/).filter(l => l.trim() !== "");
+            const rows = []
+            const lines = text.split(/\r?\n/).filter((l) => l.trim() !== '')
             for (let line of lines) {
-                const parts = line.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
-                rows.push(parts.map(p => p.trim().replace(/^"|"$/g, '')));
+                const parts = line.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/)
+                rows.push(parts.map((p) => p.trim().replace(/^"|"$/g, '')))
             }
-            return rows;
+            return rows
         }
 
         async function init() {
-            const sheetURL = `https://docs.google.com/spreadsheets/d/${spreadsheetId}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(pageName)}`;
+            const sheetURL = `https://docs.google.com/spreadsheets/d/${spreadsheetId}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(pageName)}`
             try {
-                const res = await fetch(sheetURL);
-                const text = await res.text();
-                const rows = parseCSV(text);
+                const res = await fetch(sheetURL)
+                const text = await res.text()
+                const rows = parseCSV(text)
 
-                const prefs = JSON.parse(localStorage.getItem('searchPrefs') || '{}');
-                const groups = {};
-                siteData = [];
+                const prefs = JSON.parse(localStorage.getItem('searchPrefs') || '{}')
+                const groups = {}
+                siteData = []
 
                 rows.forEach((cols, i) => {
-                    if (cols.length < 3) return;
-                    const site = { id: i, name: cols[0], url: cols[1], tag: cols[2] };
-                    siteData.push(site);
-                    if (!groups[site.tag]) groups[site.tag] = [];
-                    groups[site.tag].push(site);
-                });
-                render(groups, prefs);
+                    if (cols.length < 3) return
+                    const site = { id: i, name: cols[0], url: cols[1], tag: cols[2] }
+                    siteData.push(site)
+                    if (!groups[site.tag]) groups[site.tag] = []
+                    groups[site.tag].push(site)
+                })
+                render(groups, prefs)
             } catch (err) {
-                document.getElementById('content').innerHTML = `<div style="color:red; text-align:center;">讀取失敗，請檢查權限設定。</div>`;
+                document.getElementById('content').innerHTML =
+                    `<div style="color:red; text-align:center;">讀取失敗，請檢查權限設定。</div>`
             }
         }
 
         function render(groups, prefs) {
-            const container = document.getElementById('content');
-            container.innerHTML = "";
+            const container = document.getElementById('content')
+            container.innerHTML = ''
 
             for (const [tag, sites] of Object.entries(groups)) {
-                const row = document.createElement('div');
-                row.className = 'tag-row';
+                const row = document.createElement('div')
+                row.className = 'tag-row'
                 row.innerHTML = `
                     <div class="tag-header" onclick="toggleTag('${tag}')">
                         <div class="tag-label">🏷️ ${tag}</div>
                         <span style="font-size:10px; color:#999;"></span>
                     </div>
                     <div class="site-container" id="g-${tag}"></div>
-                `;
-                container.appendChild(row);
+                `
+                container.appendChild(row)
 
-                const grid = document.getElementById(`g-${tag}`);
-                sites.forEach(s => {
-                    const checked = prefs[s.name] !== false;
-                    const label = document.createElement('label');
-                    label.className = `site-item ${checked ? 'active' : ''}`;
-                    label.dataset.name = s.name;
-                    label.dataset.tag = tag;
+                const grid = document.getElementById(`g-${tag}`)
+                sites.forEach((s) => {
+                    const checked = prefs[s.name] !== false
+                    const label = document.createElement('label')
+                    label.className = `site-item ${checked ? 'active' : ''}`
+                    label.dataset.name = s.name
+                    label.dataset.tag = tag
                     label.innerHTML = `
                         <input type="checkbox" data-id="${s.id}" ${checked ? 'checked' : ''}>
                         <img src="${getIcon(s.url)}" class="site-icon">
                         <span>${s.name}</span>
-                    `;
+                    `
 
                     // 修正點擊事件邏輯
                     label.onclick = (e) => {
-                        e.preventDefault(); 
-                        const cb = label.querySelector('input');
-                        cb.checked = !cb.checked;
-                        label.classList.toggle('active', cb.checked);
-                        save();
-                    };
-                    grid.appendChild(label);
-                });
+                        e.preventDefault()
+                        const cb = label.querySelector('input')
+                        cb.checked = !cb.checked
+                        label.classList.toggle('active', cb.checked)
+                        save()
+                    }
+                    grid.appendChild(label)
+                })
             }
         }
 
         function toggleAllGlobal() {
-            const items = document.querySelectorAll('.site-item');
-            const anyUnchecked = Array.from(items).some(i => !i.querySelector('input').checked);
-            items.forEach(item => {
-                const cb = item.querySelector('input');
-                cb.checked = anyUnchecked;
-                item.classList.toggle('active', anyUnchecked);
-            });
-            save();
+            const items = document.querySelectorAll('.site-item')
+            const anyUnchecked = Array.from(items).some((i) => !i.querySelector('input').checked)
+            items.forEach((item) => {
+                const cb = item.querySelector('input')
+                cb.checked = anyUnchecked
+                item.classList.toggle('active', anyUnchecked)
+            })
+            save()
         }
 
         function toggleTag(t) {
-            const items = document.querySelectorAll(`.site-item[data-tag="${t}"]`);
-            const anyUnchecked = Array.from(items).some(i => !i.querySelector('input').checked);
-            items.forEach(item => {
-                const cb = item.querySelector('input');
-                cb.checked = anyUnchecked;
-                item.classList.toggle('active', anyUnchecked);
-            });
-            save();
+            const items = document.querySelectorAll(`.site-item[data-tag="${t}"]`)
+            const anyUnchecked = Array.from(items).some((i) => !i.querySelector('input').checked)
+            items.forEach((item) => {
+                const cb = item.querySelector('input')
+                cb.checked = anyUnchecked
+                item.classList.toggle('active', anyUnchecked)
+            })
+            save()
         }
 
         function save() {
-            const p = {};
-            document.querySelectorAll('.site-item').forEach(item => {
-                p[item.dataset.name] = item.querySelector('input').checked;
-            });
-            localStorage.setItem('searchPrefs', JSON.stringify(p));
+            const p = {}
+            document.querySelectorAll('.site-item').forEach((item) => {
+                p[item.dataset.name] = item.querySelector('input').checked
+            })
+            localStorage.setItem('searchPrefs', JSON.stringify(p))
         }
 
         async function startSearch() {
-            const input = document.getElementById('searchInput');
-            const kw = input.value.trim();
-            if (!kw) return;
-            
-            const checkedBoxes = document.querySelectorAll('.site-item input:checked');
-            const sel = Array.from(checkedBoxes).map(c => siteData[c.dataset.id]);
-            
-            if (sel.length > 5 && !confirm(`即將開啟 ${sel.length} 個分頁，確定嗎？`)) return;
+            const input = document.getElementById('searchInput')
+            const kw = input.value.trim()
+            if (!kw) return
+
+            const checkedBoxes = document.querySelectorAll('.site-item input:checked')
+            const sel = Array.from(checkedBoxes).map((c) => siteData[c.dataset.id])
+
+            if (sel.length > 5 && !confirm(`即將開啟 ${sel.length} 個分頁，確定嗎？`)) return
 
             for (let i = 0; i < sel.length; i++) {
-                let finalURL = sel[i].url;
-                let searchWord = kw;
+                let finalURL = sel[i].url
+                let searchWord = kw
 
                 // 處理大小寫轉換需求
                 if (finalURL.includes('KEYWORD')) {
-                    searchWord = kw.toUpperCase();
-                    finalURL = finalURL.replace('KEYWORD', encodeURIComponent(searchWord));
+                    searchWord = kw.toUpperCase()
+                    finalURL = finalURL.replace('KEYWORD', encodeURIComponent(searchWord))
                 } else if (finalURL.includes('keyword')) {
-                    searchWord = kw.toLowerCase();
-                    finalURL = finalURL.replace('keyword', encodeURIComponent(searchWord));
+                    searchWord = kw.toLowerCase()
+                    finalURL = finalURL.replace('keyword', encodeURIComponent(searchWord))
                 } else if (finalURL.includes('Keyword')) {
-                    searchWord = kw.charAt(0).toUpperCase() + kw.slice(1);
-                    finalURL = finalURL.replace('Keyword', encodeURIComponent(searchWord));
+                    searchWord = kw.charAt(0).toUpperCase() + kw.slice(1)
+                    finalURL = finalURL.replace('Keyword', encodeURIComponent(searchWord))
                 } else {
                     // 如果都沒對到，預設不轉換但執行替換（如果網址內有其他寫法）
-                    finalURL = finalURL.replace(/keyword/gi, encodeURIComponent(kw));
+                    finalURL = finalURL.replace(/keyword/gi, encodeURIComponent(kw))
                 }
 
-                window.open(finalURL, '_blank');
-                if (i < sel.length - 1) await new Promise(r => setTimeout(r, 600));
+                window.open(finalURL, '_blank')
+                if (i < sel.length - 1) await new Promise((r) => setTimeout(r, 600))
             }
-            input.value = '';
+            input.value = ''
         }
 
-        document.getElementById('searchInput').addEventListener('keypress', e => { 
-            if(e.key === 'Enter') startSearch(); 
-        });
+        document.getElementById('searchInput').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') startSearch()
+        })
 
-        init();
+        init()
     </script>
 </body>
+
 </html>
