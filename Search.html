@@ -179,7 +179,7 @@
             }
         })
 
-        // 共用的背景開啟函式（不搶焦點）
+        // 核心：模擬中鍵「背景開啟、不搶焦點」的函式
         const openInBackground = (url) => {
             const a = document.createElement('a')
             a.href = url
@@ -206,7 +206,7 @@
             }
         }
 
-        // 頂部按鈕支援滑鼠中鍵點擊直接用背景新分頁搜尋
+        // 頂部按鈕支援滑鼠中鍵點擊
         mainBtn.onauxclick = (e) => {
             if (e.button === 1) {
                 e.preventDefault()
@@ -407,7 +407,7 @@
                     finalURL = finalURL.replace(/keyword/gi, encodeURIComponent(kw))
                 }
 
-                // 批次搜尋改用背景開啟，不搶焦點
+                // 關鍵：使用 openInBackground 確保左鍵點擊或 Enter 觸發時，分頁在背景開啟不搶焦點
                 openInBackground(finalURL)
                 
                 if (i < sel.length - 1) await new Promise((r) => setTimeout(r, 600))
