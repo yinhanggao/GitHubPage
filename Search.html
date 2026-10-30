@@ -179,54 +179,61 @@
             }
         })
 
-// 左鍵點擊行為維持不變
-mainBtn.onclick = async () => {
-    if (searchInput.value.trim() === '') {
-        try {
-            const text = await navigator.clipboard.readText()
-            if (text) {
-                searchInput.value = text
-                searchInput.dispatchEvent(new Event('input'))
-            }
-        } catch (err) {
-            alert('無法讀取剪貼簿，請檢查瀏覽器權限。')
+        // 共用的背景開啟函式（不搶焦點）
+        const openInBackground = (url) => {
+            const a = document.createElement('a')
+            a.href = url
+            a.target = '_blank'
+            document.body.appendChild(a)
+            a.click()
+            document.body.removeChild(a)
         }
-    } else {
-        startSearch()
-    }
-}
 
-// 新增：讓頂部按鈕也支援「滑鼠中鍵」點擊直接用新分頁搜尋
-mainBtn.onauxclick = (e) => {
-    if (e.button === 1) { // 1 代表滑鼠中鍵
-        e.preventDefault()
-        const kw = searchInput.value.trim()
-        if (!kw) return
-        
-        // 抓取目前畫面上被勾選（active）的第一個網站或預設行為
-        // 這裡會直接套用你原本 startSearch 的組網址邏輯並開新分頁
-        const checkedBoxes = document.querySelectorAll('.site-item input:checked')
-        if (checkedBoxes.length > 0) {
-            const sel = Array.from(checkedBoxes).map((c) => siteData[c.dataset.id])
-            // 中鍵點擊時直接把所有勾選的項目在新分頁打開
-            sel.forEach((s) => {
-                let finalURL = s.url
-                if (finalURL.includes('KEYWORD')) {
-                    finalURL = finalURL.replace('KEYWORD', encodeURIComponent(kw.toUpperCase()))
-                } else if (finalURL.includes('keyword')) {
-                    finalURL = finalURL.replace('keyword', encodeURIComponent(kw.toLowerCase()))
-                } else if (finalURL.includes('Keyword')) {
-                    finalURL = finalURL.replace('Keyword', encodeURIComponent(kw.charAt(0).toUpperCase() + kw.slice(1)))
-                } else {
-                    finalURL = finalURL.replace(/keyword/gi, encodeURIComponent(kw))
+        // 左鍵點擊行為
+        mainBtn.onclick = async () => {
+            if (searchInput.value.trim() === '') {
+                try {
+                    const text = await navigator.clipboard.readText()
+                    if (text) {
+                        searchInput.value = text
+                        searchInput.dispatchEvent(new Event('input'))
+                    }
+                } catch (err) {
+                    alert('無法讀取剪貼簿，請檢查瀏覽器權限。')
                 }
-                window.open(finalURL, '_blank')
-            })
-            searchInput.value = ''
-            searchInput.dispatchEvent(new Event('input'))
+            } else {
+                startSearch()
+            }
         }
-    }
-}
+
+        // 頂部按鈕支援滑鼠中鍵點擊直接用背景新分頁搜尋
+        mainBtn.onauxclick = (e) => {
+            if (e.button === 1) {
+                e.preventDefault()
+                const kw = searchInput.value.trim()
+                if (!kw) return
+                
+                const checkedBoxes = document.querySelectorAll('.site-item input:checked')
+                if (checkedBoxes.length > 0) {
+                    const sel = Array.from(checkedBoxes).map((c) => siteData[c.dataset.id])
+                    sel.forEach((s) => {
+                        let finalURL = s.url
+                        if (finalURL.includes('KEYWORD')) {
+                            finalURL = finalURL.replace('KEYWORD', encodeURIComponent(kw.toUpperCase()))
+                        } else if (finalURL.includes('keyword')) {
+                            finalURL = finalURL.replace('keyword', encodeURIComponent(kw.toLowerCase()))
+                        } else if (finalURL.includes('Keyword')) {
+                            finalURL = finalURL.replace('Keyword', encodeURIComponent(kw.charAt(0).toUpperCase() + kw.slice(1)))
+                        } else {
+                            finalURL = finalURL.replace(/keyword/gi, encodeURIComponent(kw))
+                        }
+                        openInBackground(finalURL)
+                    })
+                    searchInput.value = ''
+                    searchInput.dispatchEvent(new Event('input'))
+                }
+            }
+        }
 
         searchInput.addEventListener('click', async () => {
             if (searchInput.value.trim() === '') {
@@ -269,7 +276,6 @@ mainBtn.onauxclick = (e) => {
 
                 rows.forEach((cols, i) => {
                     if (cols.length < 3) return
-                    // 讀取 D 欄 (Index 3)
                     const hUrl = (cols[3] && cols[3].trim().startsWith('http')) ? cols[3].trim() : null
 
                     const site = {
@@ -312,7 +318,6 @@ mainBtn.onauxclick = (e) => {
                     label.className = `site-item ${checked ? 'active' : ''}`
                     label.dataset.name = s.name
 
-                    // 設定滑鼠懸停提示
                     if (s.homeUrl) {
                         label.title = `中鍵點擊開啟首頁: ${s.homeUrl}`
                     }
@@ -323,7 +328,6 @@ mainBtn.onauxclick = (e) => {
                         <span>${s.name}</span>
                     `
 
-                    // 左鍵點擊：切換選取
                     label.onclick = (e) => {
                         e.preventDefault()
                         const cb = label.querySelector('input')
@@ -332,12 +336,11 @@ mainBtn.onauxclick = (e) => {
                         save()
                     }
 
-                    // 中鍵點擊：開啟 D 欄網址
                     label.onauxclick = (e) => {
-                        if (e.button === 1) { // 1 = 中鍵
+                        if (e.button === 1) {
                             e.preventDefault()
                             if (s.homeUrl) {
-                                window.open(s.homeUrl, '_blank')
+                                openInBackground(s.homeUrl)
                             }
                         }
                     }
@@ -404,7 +407,9 @@ mainBtn.onauxclick = (e) => {
                     finalURL = finalURL.replace(/keyword/gi, encodeURIComponent(kw))
                 }
 
-                window.open(finalURL, '_blank')
+                // 批次搜尋改用背景開啟，不搶焦點
+                openInBackground(finalURL)
+                
                 if (i < sel.length - 1) await new Promise((r) => setTimeout(r, 600))
             }
             input.value = ''
